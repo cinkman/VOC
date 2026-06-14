@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOC Treatment Adventure</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
+#lang-btn{position:fixed;top:14px;right:14px;z-index:999;background:#1e40af;border:none;color:#fff;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:14px;font-weight:700}
+#lang-btn:hover{background:#2563eb}
+#header{text-align:center;padding:18px 0 8px;background:linear-gradient(180deg,#0f172a,transparent)}
+#header h1{font-size:2rem;background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900}
+#header p{color:#94a3b8;font-size:.9rem;margin-top:4px}
+#score-bar{display:flex;justify-content:center;gap:32px;padding:8px 0;background:#0f172a80;font-size:.85rem}
+.stat{display:flex;align-items:center;gap:6px}
+.stat-val{color:#fbbf24;font-weight:700;font-size:1rem}
+#main{display:flex;flex-direction:column;align-items:center;padding:10px}
+#canvas-wrap{position:relative;width:100%;max-width:1100px}
+canvas{display:block;width:100%;border-radius:12px;border:1px solid #1e3a5f}
+#info-panel{width:100%;max-width:1100px;margin-top:12px;background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:16px 20px;min-height:90px}
+#info-title{font-size:1.1rem;font-weight:700;color:#fbbf24;margin-bottom:6px}
+#info-body{font-size:.9rem;color:#cbd5e1;line-height:1.6}
+#chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:#1e3a5f;border-radius:20px;padding:4px 14px;font-size:.78rem;color:#93c5fd;border:1px solid #2563eb55}
+#controls{display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.btn{padding:10px 22px;border:none;border-radius:24px;font-weight:700;cursor:pointer;font-size:.9rem;transition:.2s}
+.btn-orange{background:linear-gradient(90deg,#ea580c,#f97316);color:#fff}
+.btn-orange:hover{filter:brightness(1.15)}
+.btn-blue{background:linear-gradient(90deg,#1d4ed8,#3b82f6);color:#fff}
+.btn-blue:hover{filter:brightness(1.15)}
+.btn-green{background:linear-gradient(90deg,#15803d,#22c55e);color:#fff}
+.btn-green:hover{filter:brightness(1.15)}
+.btn-gray{background:#334155;color:#94a3b8}
+.btn-gray:hover{background:#475569}
+#mode-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:4px}
+.mode-ads{background:#164e63;color:#67e8f9}
+.mode-des{background:#451a03;color:#fb923c}
+#purify-bar-wrap{width:100%;max-width:1100px;margin-top:10px;background:#0f172a;border-radius:8px;overflow:hidden;height:22px;border:1px solid #1e3a5f}
+#purify-bar{height:100%;width:0%;background:linear-gradient(90deg,#16a34a,#86efac);transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:.75rem;font-weight:700;color:#fff}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#fbbf24;color:#0a0a1a;padding:10px 28px;border-radius:24px;font-weight:700;font-size:1rem;display:none;z-index:1000;box-shadow:0 4px 20px #0008}
+</style>
+</head>
+<body>
+<button id="lang-btn" onclick="toggleLang()">ภาษาไทย</button>
+<div id="toast"></div>
+
+<div id="header">
+  <h1 id="h-title">VOC Treatment Adventure</h1>
+  <p id="h-sub">Click each stage to learn how VOC gases are cleaned!</p>
+</div>
+
+<div id="score-bar">
+  <div class="stat"><span id="lbl-cleaned">Molecules Cleaned:</span> <span class="stat-val" id="stat-cleaned">0</span></div>
+  <div class="stat"><span id="lbl-eff">Efficiency:</span> <span class="stat-val" id="stat-eff">0%</span></div>
+  <div class="stat"><span id="lbl-stage">Active Stage:</span> <span class="stat-val" id="stat-stage">—</span></div>
+</div>
+
+<div id="main">
+  <div id="purify-bar-wrap"><div id="purify-bar">0%</div></div>
+
+  <div id="canvas-wrap" style="margin-top:10px">
+    <canvas id="c" width="1100" height="420"></canvas>
+  </div>
+
+  <div id="info-panel">
+    <div id="mode-badge" class="mode-ads" id="mode-badge">ADSORPTION MODE</div>
+    <div id="info-title">Welcome to the VOC Treatment System!</div>
+    <div id="info-body">Click on any stage below to learn how it works. Watch the orange VOC particles travel through the system and get cleaned at each stage.</div>
+    <div id="chips"></div>
+  </div>
+
+  <div id="controls">
+    <button class="btn btn-orange" onclick="addBurst()" id="btn-burst">💨 Release VOC Burst</button>
+    <button class="btn btn-blue" onclick="toggleMode()" id="btn-mode">🔥 Switch to Desorption Mode</button>
+    <button class="btn btn-green" onclick="resetGame()" id="btn-reset">↺ Reset</button>
+    <button class="btn btn-gray" onclick="togglePause()" id="btn-pause">⏸ Pause</button>
+  </div>
+</div>
+
+<script>
+// ─── Language Data ───────────────────────────────────────────────────────────
+const D = {
+  en: {
+    title:"VOC Treatment Adventure",
+    sub:"Click each stage to learn how VOC gases are cleaned!",
+    cleaned:"Molecules Cleaned:", eff:"Efficiency:", activeStage:"Active Stage:",
+    welcome:"Welcome to the VOC Treatment System!",
+    welcomeBody:"Click on any stage below to learn how it works. Watch the orange VOC particles travel through the system and get cleaned at each stage.",
+    modeBadgeAds:"ADSORPTION MODE", modeBadgeDes:"DESORPTION + COMBUSTION MODE",
+    btnBurst:"💨 Release VOC Burst", btnMode:"🔥 Switch to Desorption Mode",
+    btnModeBack:"💨 Switch to Adsorption Mode",
+    btnReset:"↺ Reset", btnPause:"⏸ Pause", btnResume:"▶ Resume",
+    toastBurst:"VOC burst released! Watch the particles flow →",
+    toastMode:"🔥 Desorption cycle activated! Carbon beds being regenerated!",
+    toastModeBack:"💨 Back to normal adsorption mode",
+    stages:[
+      {
+        name:"Spray Booth",
+        body:"This is where ceramic mugs are spray-painted. VOC gases (solvents from the paint) are released into the air here and must be captured before they escape.",
+        chips:["Source of VOC","Paint solvents","High concentration"]
+      },
+      {
+        name:"Cyclone Tower",
+        body:"A spinning vortex of air forces heavy dust and paint droplets to the outside walls and down into a collection bin. Larger particles are removed here, protecting downstream equipment.",
+        chips:["Centrifugal force","Removes dust","Protects downstream"]
+      },
+      {
+        name:"Dry Filter",
+        body:"Air passes through layers of filter media (like thick cardboard baffles). Fine dust particles that escaped the cyclone get trapped in the fibers. Filters are replaced when clogged.",
+        chips:["Fibrous media","Sub-micron dust","Replaceable filters"]
+      },
+      {
+        name:"Activated Carbon",
+        body:"The air flows through beds of activated carbon — a highly porous material with enormous surface area. VOC molecules stick (adsorb) onto the carbon surface and are removed from the air stream. In Desorption mode, hot steam pushes the VOC back off and sends it to the furnace.",
+        chips:["Porous carbon","VOC adsorption","Regenerable","Critical stage"]
+      },
+      {
+        name:"Catalytic Furnace",
+        body:"During desorption, concentrated VOC gases from the carbon beds are burned in this furnace at ~300°C with a catalyst. The catalyst lowers the ignition temperature so less energy is needed. VOC becomes CO₂ + H₂O — harmless!",
+        chips:["~300°C combustion","Catalyst bed","VOC → CO₂ + H₂O","Desorption mode only"]
+      },
+      {
+        name:"Fan & Clean Air Out",
+        body:"The main fan creates the negative pressure that pulls air through the entire system. After treatment, clean air exits through the exhaust stack. Efficiency target: >95% VOC removal.",
+        chips:["Negative pressure","Draft fan","Clean exhaust",">95% removal"]
+      }
+    ]
+  },
+  th: {
+    title:"การผจญภัยระบบบำบัด VOC",
+    sub:"คลิกที่แต่ละขั้นตอนเพื่อเรียนรู้วิธีบำบัดก๊าซ VOC!",
+    cleaned:"โมเลกุลที่บำบัดแล้ว:", eff:"ประสิทธิภาพ:", activeStage:"ขั้นตอนที่ใช้งาน:",
+    welcome:"ยินดีต้อนรับสู่ระบบบำบัด VOC!",
+    welcomeBody:"คลิกที่แต่ละขั้นตอนด้านล่างเพื่อเรียนรู้วิธีการทำงาน ดูอนุภาค VOC สีส้มเดินทางผ่านระบบและถูกบำบัดในแต่ละขั้นตอน",
+    modeBadgeAds:"โหมดการดูดซับ", modeBadgeDes:"โหมดคืนสภาพ + เผาไหม้",
+    btnBurst:"💨 ปล่อย VOC", btnMode:"🔥 เปลี่ยนเป็นโหมดคืนสภาพ",
+    btnModeBack:"💨 กลับโหมดดูดซับ",
+    btnReset:"↺ รีเซ็ต", btnPause:"⏸ หยุดชั่วคราว", btnResume:"▶ เล่นต่อ",
+    toastBurst:"ปล่อย VOC แล้ว! ดูอนุภาคไหล →",
+    toastMode:"🔥 เปิดใช้วงจรคืนสภาพ! กำลังฟื้นฟูถ่านกัมมันต์!",
+    toastModeBack:"💨 กลับสู่โหมดดูดซับปกติ",
+    stages:[
+      {
+        name:"บูธพ่นสี",
+        body:"ที่นี่คือที่ที่แก้วมัคเซรามิกถูกพ่นสี ก๊าซ VOC (ตัวทำละลายจากสี) ถูกปล่อยออกสู่อากาศและต้องถูกดักจับก่อนที่จะหลุดออกไป",
+        chips:["แหล่งกำเนิด VOC","ตัวทำละลายสี","ความเข้มข้นสูง"]
+      },
+      {
+        name:"หอไซโคลน",
+        body:"กระแสน้ำวนของอากาศบังคับให้ฝุ่นและละอองสีหนักไปที่ผนังด้านนอกและลงสู่ถังเก็บ อนุภาคขนาดใหญ่ถูกกำจัดที่นี่เพื่อปกป้องอุปกรณ์ถัดไป",
+        chips:["แรงเหวี่ยง","กำจัดฝุ่น","ปกป้องระบบถัดไป"]
+      },
+      {
+        name:"ตัวกรองแห้ง",
+        body:"อากาศผ่านชั้นของตัวกรอง ฝุ่นละเอียดที่หลุดจากไซโคลนถูกดักในเส้นใย ตัวกรองจะถูกเปลี่ยนเมื่ออุดตัน",
+        chips:["ตัวกลางเส้นใย","ฝุ่นละเอียด","ตัวกรองเปลี่ยนได้"]
+      },
+      {
+        name:"ถ่านกัมมันต์",
+        body:"อากาศไหลผ่านชั้นถ่านกัมมันต์ซึ่งมีพื้นที่ผิวมหาศาล โมเลกุล VOC เกาะ (ดูดซับ) บนพื้นผิวถ่านและถูกกำจัดออกจากกระแสอากาศ ในโหมดคืนสภาพ ไอน้ำร้อนจะดัน VOC ออกแล้วส่งไปยังเตาเผา",
+        chips:["ถ่านพรุน","การดูดซับ VOC","ฟื้นฟูได้","ขั้นตอนสำคัญ"]
+      },
+      {
+        name:"เตาเผาเร่งปฏิกิริยา",
+        body:"ระหว่างการคืนสภาพ ก๊าซ VOC เข้มข้นจากถ่านกัมมันต์ถูกเผาในเตาที่อุณหภูมิ ~300°C พร้อมตัวเร่งปฏิกิริยา ตัวเร่งปฏิกิริยาลดอุณหภูมิการจุดระเบิดเพื่อประหยัดพลังงาน VOC กลายเป็น CO₂ + H₂O!",
+        chips:["เผาที่ ~300°C","ตัวเร่งปฏิกิริยา","VOC → CO₂ + H₂O","เฉพาะโหมดคืนสภาพ"]
+      },
+      {
+        name:"พัดลมและอากาศสะอาด",
+        body:"พัดลมหลักสร้างแรงดันลบที่ดึงอากาศผ่านระบบทั้งหมด หลังจากการบำบัด อากาศสะอาดออกทางปล่องไอเสีย เป้าหมายประสิทธิภาพ: >95% การกำจัด VOC",
+        chips:["แรงดันลบ","พัดลมดราฟต์","ไอเสียสะอาด",">95% การกำจัด"]
+      }
+    ]
+  }
+};
+
+let lang = 'en';
+function toggleLang(){
+  lang = lang==='en'?'th':'en';
+  document.getElementById('lang-btn').textContent = lang==='en'?'ภาษาไทย':'English';
+  applyLang();
+}
+function applyLang(){
+  const d = D[lang];
+  document.getElementById('h-title').textContent = d.title;
+  document.getElementById('h-sub').textContent = d.sub;
+  document.getElementById('lbl-cleaned').textContent = d.cleaned;
+  document.getElementById('lbl-eff').textContent = d.eff;
+  document.getElementById('lbl-stage').textContent = d.activeStage;
+  document.getElementById('btn-burst').textContent = d.btnBurst;
+  document.getElementById('btn-mode').textContent = desMode ? d.btnModeBack : d.btnMode;
+  document.getElementById('btn-reset').textContent = d.btnReset;
+  document.getElementById('btn-pause').textContent = paused ? d.btnResume : d.btnPause;
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = desMode ? d.modeBadgeDes : d.modeBadgeAds;
+  badge.className = 'mode-badge ' + (desMode ? 'mode-des' : 'mode-ads');
+  if(activeStageIdx !== null) showStageInfo(activeStageIdx);
+  else {
+    document.getElementById('info-title').textContent = d.welcome;
+    document.getElementById('info-body').textContent = d.welcomeBody;
+    document.getElementById('chips').innerHTML='';
+  }
+}
+
+// ─── Canvas & Animation ───────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 1100, H = 420;
+
+// Stage layout
+const STAGES = [
+  {id:0, x:30,  y:60, w:130, h:300, color:'#7c3aed', glow:'#a855f7'},
+  {id:1, x:195, y:60, w:140, h:300, color:'#0e7490', glow:'#06b6d4'},
+  {id:2, x:368, y:60, w:140, h:300, color:'#b45309', glow:'#f59e0b'},
+  {id:3, x:541, y:60, w:160, h:300, color:'#166534', glow:'#22c55e'},
+  {id:4, x:734, y:60, w:160, h:300, color:'#991b1b', glow:'#ef4444'},
+  {id:5, x:927, y:60, w:145, h:300, color:'#1e40af', glow:'#3b82f6'},
+];
+const PIPE_Y = 210; // center pipe height
+
+// Particles
+let particles = [];
+let pidSeq = 0;
+
+function spawnParticle(x, y, stageTarget){
+  particles.push({
+    id: pidSeq++,
+    x, y,
+    vx: 1.2 + Math.random()*0.8,
+    vy: (Math.random()-0.5)*0.4,
+    r: 4 + Math.random()*3,
+    life: 1,
+    state: 'voc', // voc | dust | adsorbed | burned | clean
+    stageTarget,
+    alpha: 1,
+    trail: [],
+    wobble: Math.random()*Math.PI*2,
+    wobbleSpeed: 0.05+Math.random()*0.05
+  });
+}
+
+function addBurst(){
+  for(let i=0;i<18;i++){
+    spawnParticle(60 + Math.random()*40, 130 + Math.random()*160, 0);
+  }
+  showToast(D[lang].toastBurst);
+}
+
+// Stage click detection
+let activeStageIdx = null;
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * (H / rect.height);
+  for(const s of STAGES){
+    if(mx>=s.x && mx<=s.x+s.w && my>=s.y && my<=s.y+s.h){
+      activeStageIdx = s.id;
+      showStageInfo(s.id);
+      // burst particles on click
+      for(let i=0;i<6;i++) spawnParticle(s.x+s.w/2+Math.random()*20-10, s.y+s.h/2+Math.random()*20-10, s.id);
+      return;
+    }
+  }
+});
+
+function showStageInfo(idx){
+  const sd = D[lang].stages[idx];
+  document.getElementById('info-title').textContent = sd.name;
+  document.getElementById('info-body').textContent = sd.body;
+  const chips = document.getElementById('chips');
+  chips.innerHTML = sd.chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('stat-stage').textContent = sd.name;
+}
+
+// Stats
+let cleaned = 0, total = 0;
+function updateStats(){
+  document.getElementById('stat-cleaned').textContent = cleaned;
+  const eff = total>0 ? Math.round(cleaned/total*100) : 0;
+  document.getElementById('stat-eff').textContent = eff+'%';
+  const bar = document.getElementById('purify-bar');
+  bar.style.width = eff+'%';
+  bar.textContent = eff+'%';
+}
+
+// Mode
+let desMode = false;
+function toggleMode(){
+  desMode = !desMode;
+  const d = D[lang];
+  document.getElementById('btn-mode').textContent = desMode ? d.btnModeBack : d.btnMode;
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = desMode ? d.modeBadgeDes : d.modeBadgeAds;
+  badge.className = 'mode-badge ' + (desMode ? 'mode-des' : 'mode-ads');
+  showToast(desMode ? d.toastMode : d.toastModeBack);
+  // fire extra particles from carbon stage during desorption
+  if(desMode){
+    for(let i=0;i<12;i++){
+      const p = {
+        id:pidSeq++, x:STAGES[3].x+STAGES[3].w/2, y:STAGES[3].y+50+Math.random()*200,
+        vx:1.5+Math.random(), vy:(Math.random()-0.5)*0.6,
+        r:5+Math.random()*3, life:1, state:'voc', stageTarget:3,
+        alpha:1, trail:[], wobble:Math.random()*Math.PI*2, wobbleSpeed:.06
+      };
+      particles.push(p);
+    }
+  }
+}
+
+// Reset
+function resetGame(){
+  particles=[];
+  cleaned=0;total=0;
+  activeStageIdx=null;
+  updateStats();
+  document.getElementById('info-title').textContent=D[lang].welcome;
+  document.getElementById('info-body').textContent=D[lang].welcomeBody;
+  document.getElementById('chips').innerHTML='';
+  document.getElementById('stat-stage').textContent='—';
+}
+
+// Pause
+let paused = false;
+function togglePause(){
+  paused=!paused;
+  document.getElementById('btn-pause').textContent=paused?D[lang].btnResume:D[lang].btnPause;
+}
+
+// Toast
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display='none',2800);
+}
+
+// ─── Particle color by state ─────────────────────────────────────────────────
+function particleColor(p){
+  switch(p.state){
+    case 'voc': return `rgba(251,146,60,${p.alpha})`;   // orange
+    case 'dust': return `rgba(161,120,90,${p.alpha})`;  // brown
+    case 'adsorbed': return `rgba(34,197,94,${p.alpha})`; // green
+    case 'burned': return `rgba(239,68,68,${p.alpha})`; // red
+    case 'clean': return `rgba(147,197,253,${p.alpha})`; // light blue
+  }
+}
+
+// ─── Draw helpers ─────────────────────────────────────────────────────────────
+function drawStage(s, highlight){
+  ctx.save();
+  // glow
+  if(highlight){
+    ctx.shadowColor=s.glow; ctx.shadowBlur=30;
+  }
+  // box
+  const g = ctx.createLinearGradient(s.x,s.y,s.x,s.y+s.h);
+  g.addColorStop(0, s.color+'cc');
+  g.addColorStop(1, s.color+'55');
+  ctx.fillStyle=g;
+  ctx.strokeStyle=highlight?s.glow:s.color+'aa';
+  ctx.lineWidth=highlight?2.5:1.5;
+  ctx.beginPath();
+  ctx.roundRect(s.x,s.y,s.w,s.h,10);
+  ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+
+function drawStageLabel(s, name, idx){
+  ctx.save();
+  ctx.fillStyle='#fff';
+  ctx.font='bold 11px Segoe UI';
+  ctx.textAlign='center';
+  // stage number circle
+  ctx.beginPath();
+  ctx.arc(s.x+s.w/2, s.y+22, 14, 0, Math.PI*2);
+  ctx.fillStyle=s.glow;
+  ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.font='bold 13px Segoe UI';
+  ctx.fillText(idx+1, s.x+s.w/2, s.y+27);
+  // name
+  ctx.fillStyle='#f1f5f9';
+  ctx.font='bold 10.5px Segoe UI';
+  const words = name.split(' ');
+  let lineY = s.y+52;
+  let line='';
+  for(const w of words){
+    const test = line+w+' ';
+    if(ctx.measureText(test).width > s.w-12 && line!==''){
+      ctx.fillText(line.trim(), s.x+s.w/2, lineY);
+      line=w+' '; lineY+=15;
+    } else line=test;
+  }
+  ctx.fillText(line.trim(), s.x+s.w/2, lineY);
+  ctx.restore();
+}
+
+function drawPipes(){
+  // main pipe connecting all stages
+  ctx.save();
+  const grad = ctx.createLinearGradient(30,0,1072,0);
+  grad.addColorStop(0,'#7c3aed55');
+  grad.addColorStop(.5,'#22c55e55');
+  grad.addColorStop(1,'#3b82f655');
+  ctx.strokeStyle=grad;
+  ctx.lineWidth=28;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(30, PIPE_Y); ctx.lineTo(1072, PIPE_Y);
+  ctx.stroke();
+  // inner highlight
+  ctx.strokeStyle='rgba(255,255,255,0.06)';
+  ctx.lineWidth=10;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawStageInternals(s, idx){
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(s.x,s.y,s.w,s.h,10);
+  ctx.clip();
+
+  switch(idx){
+    case 0: // spray booth - paint spray effect
+      for(let i=0;i<8;i++){
+        const px=s.x+20+i*13, py=s.y+100+Math.sin(Date.now()/400+i)*20;
+        ctx.fillStyle=`hsla(${260+i*10},80%,70%,.3)`;
+        ctx.beginPath();
+        ctx.arc(px,py,7+i%3*3,0,Math.PI*2);
+        ctx.fill();
+      }
+      break;
+    case 1: // cyclone - spinning vortex
+      const cx=s.x+s.w/2, cy=s.y+s.h/2;
+      const ang = Date.now()/500;
+      for(let r2=10;r2<55;r2+=14){
+        ctx.strokeStyle=`rgba(6,182,212,${0.3-r2/220})`;
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.arc(cx,cy,r2,ang+r2*.1,ang+Math.PI*1.5+r2*.1);
+        ctx.stroke();
+      }
+      break;
+    case 2: // filter - horizontal bars
+      for(let i=0;i<7;i++){
+        const fy=s.y+70+i*28;
+        ctx.fillStyle=`rgba(245,158,11,${0.15+i*.03})`;
+        ctx.fillRect(s.x+8,fy,s.w-16,14);
+        ctx.strokeStyle='rgba(245,158,11,.4)';
+        ctx.lineWidth=1;
+        ctx.strokeRect(s.x+8,fy,s.w-16,14);
+      }
+      break;
+    case 3: // carbon - dots grid
+      for(let gx=0;gx<5;gx++) for(let gy=0;gy<8;gy++){
+        const bx=s.x+16+gx*24, by=s.y+60+gy*28;
+        const pulse = Math.sin(Date.now()/600+gx+gy)*.3+.5;
+        ctx.fillStyle=desMode?`rgba(34,197,94,${pulse*0.7})`:`rgba(51,65,85,${pulse*0.8})`;
+        ctx.beginPath();ctx.arc(bx,by,8,0,Math.PI*2);ctx.fill();
+        if(desMode){
+          ctx.strokeStyle=`rgba(34,197,94,.5)`;
+          ctx.lineWidth=1.5;ctx.stroke();
+        }
+      }
+      break;
+    case 4: // furnace - flames
+      if(desMode){
+        for(let fi=0;fi<5;fi++){
+          const fx=s.x+20+fi*28, fbase=s.y+s.h-30;
+          const fh=60+Math.sin(Date.now()/200+fi*1.3)*20;
+          const fg=ctx.createLinearGradient(fx,fbase,fx,fbase-fh);
+          fg.addColorStop(0,'rgba(239,68,68,.9)');
+          fg.addColorStop(.5,'rgba(251,146,60,.7)');
+          fg.addColorStop(1,'rgba(253,224,71,.3)');
+          ctx.fillStyle=fg;
+          ctx.beginPath();
+          ctx.moveTo(fx,fbase);
+          ctx.quadraticCurveTo(fx-10,fbase-fh/2,fx,fbase-fh);
+          ctx.quadraticCurveTo(fx+10,fbase-fh/2,fx+10,fbase);
+          ctx.fill();
+        }
+      } else {
+        ctx.fillStyle='rgba(100,100,100,.2)';
+        ctx.fillRect(s.x+15,s.y+80,s.w-30,s.h-120);
+        ctx.fillStyle='rgba(150,150,150,.3)';
+        ctx.font='30px serif';
+        ctx.textAlign='center';
+        ctx.fillText('⬜',s.x+s.w/2,s.y+s.h/2+10);
+      }
+      break;
+    case 5: // fan - spinning blades
+      const fcx=s.x+s.w/2, fcy=s.y+s.h/2;
+      const fang=Date.now()/300;
+      for(let b=0;b<4;b++){
+        const ba=fang+b*Math.PI/2;
+        ctx.save();ctx.translate(fcx,fcy);ctx.rotate(ba);
+        ctx.fillStyle='rgba(59,130,246,.5)';
+        ctx.fillRect(-6,-38,12,38);
+        ctx.restore();
+      }
+      ctx.beginPath();ctx.arc(fcx,fcy,10,0,Math.PI*2);
+      ctx.fillStyle='#64748b';ctx.fill();
+      break;
+  }
+  ctx.restore();
+}
+
+// ─── Particle update & draw ───────────────────────────────────────────────────
+function updateParticles(){
+  const toRemove=[];
+  for(const p of particles){
+    p.wobble += p.wobbleSpeed;
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length>10) p.trail.shift();
+
+    p.x += p.vx;
+    p.y += Math.sin(p.wobble)*0.8 + p.vy;
+
+    // Stage interactions
+    for(const s of STAGES){
+      if(p.x>s.x+s.w/2-15 && p.x<s.x+s.w/2+15 && p.state==='voc'){
+        switch(s.id){
+          case 1: if(Math.random()<.02){ p.state='dust'; p.vx=0.3; } break;
+          case 2: if(Math.random()<.03){ p.state='dust'; p.vx=0.2; } break;
+          case 3:
+            if(!desMode && Math.random()<.04){ p.state='adsorbed'; p.vx=0; p.vy=0; total++; cleaned++; updateStats(); }
+            break;
+          case 4:
+            if(desMode && Math.random()<.05){ p.state='burned'; }
+            break;
+        }
+      }
+      // clean after stage 5
+      if(p.x>STAGES[5].x+STAGES[5].w && p.state==='voc'){ p.state='clean'; }
+    }
+
+    // adsorbed particles float away slowly
+    if(p.state==='adsorbed'){ p.vy=-0.3; p.vx=0.1; p.alpha-=0.015; }
+    if(p.state==='burned'){ p.vy-=0.2; p.alpha-=0.025; }
+    if(p.state==='clean'){ p.alpha-=0.012; }
+    if(p.state==='dust' && p.vx<0.1){ p.vy+=0.3; p.alpha-=0.02; }
+
+    if(p.alpha<=0 || p.x>W+20 || p.y>H+20 || p.y<-20) toRemove.push(p);
+  }
+  particles = particles.filter(p=>!toRemove.includes(p));
+}
+
+function drawParticles(){
+  for(const p of particles){
+    // trail
+    if(p.trail.length>1){
+      ctx.save();
+      for(let i=1;i<p.trail.length;i++){
+        const a=p.alpha*(i/p.trail.length)*0.3;
+        ctx.strokeStyle=particleColor({...p,alpha:a});
+        ctx.lineWidth=p.r*0.6;
+        ctx.beginPath();
+        ctx.moveTo(p.trail[i-1].x,p.trail[i-1].y);
+        ctx.lineTo(p.trail[i].x,p.trail[i].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    // particle body
+    ctx.save();
+    ctx.shadowColor=particleColor(p);
+    ctx.shadowBlur=10;
+    ctx.fillStyle=particleColor(p);
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ─── Legend ───────────────────────────────────────────────────────────────────
+function drawLegend(){
+  const items=[
+    {c:'rgba(251,146,60,1)', label:lang==='en'?'VOC Molecule':'โมเลกุล VOC'},
+    {c:'rgba(34,197,94,1)',  label:lang==='en'?'Adsorbed':'ดูดซับแล้ว'},
+    {c:'rgba(239,68,68,1)',  label:lang==='en'?'Burning':'กำลังเผา'},
+    {c:'rgba(147,197,253,1)',label:lang==='en'?'Clean Air':'อากาศสะอาด'},
+  ];
+  ctx.save();
+  ctx.font='11px Segoe UI';
+  let lx=30;
+  for(const it of items){
+    ctx.fillStyle=it.c; ctx.beginPath(); ctx.arc(lx,400,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#94a3b8'; ctx.fillText(it.label,lx+9,404);
+    lx += ctx.measureText(it.label).width + 30;
+  }
+  ctx.restore();
+}
+
+// ─── Main draw loop ───────────────────────────────────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // BG
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0f172a'); bg.addColorStop(1,'#020617');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  drawPipes();
+
+  for(const s of STAGES){
+    drawStage(s, activeStageIdx===s.id);
+    drawStageInternals(s, s.id);
+    drawStageLabel(s, D[lang].stages[s.id].name, s.id);
+  }
+
+  // arrow direction indicator
+  ctx.save();
+  ctx.fillStyle='rgba(148,163,184,.5)';
+  ctx.font='18px serif';
+  ctx.fillText('→', 1060, PIPE_Y+6);
+  ctx.restore();
+
+  drawParticles();
+  drawLegend();
+
+  if(!paused){
+    updateParticles();
+    // auto-spawn occasional particles
+    if(Math.random()<0.03) spawnParticle(60+Math.random()*30, 160+Math.random()*100, 0);
+  }
+
+  requestAnimationFrame(draw);
+}
+
+// ─── Click hint at start ──────────────────────────────────────────────────────
+setTimeout(()=>{ addBurst(); },600);
+draw();
+</script>
+</body>
+</html>
