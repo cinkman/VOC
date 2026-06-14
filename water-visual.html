@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Treatment — Visual Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f9ff;font-family:'Segoe UI','Noto Sans Thai',sans-serif;color:#0f172a}
+#lang-btn{position:fixed;top:14px;right:14px;z-index:99;background:#0e7490;border:none;color:#fff;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700}
+.header{background:linear-gradient(135deg,#0e7490,#0369a1);color:#fff;padding:22px 24px 16px;text-align:center}
+.header h1{font-size:1.7rem;font-weight:900;margin-bottom:4px}
+.header p{font-size:.9rem;opacity:.85}
+.sys-tabs{display:flex;justify-content:center;gap:10px;padding:14px;background:#fff;border-bottom:2px solid #e0f2fe}
+.stab{padding:9px 22px;border-radius:24px;border:2px solid #bae6fd;background:#fff;color:#0369a1;font-weight:700;cursor:pointer;font-size:.88rem;transition:.2s}
+.stab.active{background:#0e7490;color:#fff;border-color:#0e7490}
+.container{max-width:960px;margin:0 auto;padding:18px 14px}
+.section{display:none}.section.active{display:block}
+.intro-box{background:#fff;border-radius:12px;padding:16px;margin-bottom:18px;border-left:5px solid #0e7490;box-shadow:0 2px 8px #0002}
+.intro-box h3{color:#0e7490;font-size:1rem;font-weight:700;margin-bottom:6px}
+.intro-box p{font-size:.88rem;color:#374151;line-height:1.7}
+/* flow strip */
+.flow-strip{display:flex;align-items:center;gap:0;overflow-x:auto;padding:14px 0;margin-bottom:16px}
+.flow-node{display:flex;flex-direction:column;align-items:center;min-width:130px;cursor:pointer;transition:.2s}
+.flow-node:hover .node-box{transform:translateY(-3px);box-shadow:0 6px 18px rgba(14,116,144,.3)}
+.flow-node.active .node-box{border-color:#0e7490;background:linear-gradient(135deg,#cffafe,#e0f2fe)}
+.node-box{background:#fff;border:2px solid #bae6fd;border-radius:12px;padding:12px 8px;text-align:center;width:114px;transition:.2s;box-shadow:0 2px 8px #0001}
+.node-icon{font-size:1.8rem;margin-bottom:5px}
+.node-name{font-size:.72rem;font-weight:700;color:#0f172a;line-height:1.3}
+.node-arrow{font-size:1.4rem;color:#94a3b8;flex-shrink:0;padding:0 2px;align-self:center;margin-top:-16px}
+.detail-card{background:#fff;border-radius:14px;padding:20px;border:2px solid #bae6fd;box-shadow:0 2px 12px #0002;min-height:160px;margin-bottom:14px}
+.detail-card h2{color:#0e7490;font-size:1.1rem;font-weight:800;margin-bottom:8px}
+.detail-card p{font-size:.88rem;color:#374151;line-height:1.7;margin-bottom:10px}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:#cffafe;color:#0e7490;border-radius:20px;padding:4px 13px;font-size:.76rem;font-weight:700;border:1px solid #a5f3fc}
+.chip.red{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.chip.green{background:#dcfce7;color:#15803d;border-color:#86efac}
+.chip.yellow{background:#fefce8;color:#854d0e;border-color:#fde68a}
+.specs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.spec-item{background:#f0f9ff;border-radius:8px;padding:10px 12px;border:1px solid #bae6fd}
+.spec-label{font-size:.72rem;color:#64748b;font-weight:600;margin-bottom:2px}
+.spec-val{font-size:.88rem;color:#0f172a;font-weight:700}
+.process-path{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid #bae6fd}
+.process-path h4{font-size:.85rem;font-weight:700;color:#0369a1;margin-bottom:8px}
+.path-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:.8rem}
+.path-step{background:#0e7490;color:#fff;padding:4px 10px;border-radius:16px;font-weight:600}
+.path-arrow{color:#94a3b8}
+h4.section-title{font-size:.9rem;font-weight:700;color:#0369a1;margin:14px 0 8px;border-bottom:2px solid #bae6fd;padding-bottom:4px}
+</style>
+</head>
+<body>
+<button id="lang-btn" onclick="toggleLang()">ภาษาไทย</button>
+
+<div class="header">
+  <h1 id="h-title">💧 Water Treatment — Visual Guide</h1>
+  <p id="h-sub">Click any stage to see detailed explanation | Wastewater + Pure Water (RO) Systems</p>
+</div>
+
+<div class="sys-tabs">
+  <button class="stab active" onclick="setSection('waste',this)" id="tab-waste">💧 Wastewater Treatment (11)</button>
+  <button class="stab" onclick="setSection('ro',this)" id="tab-ro">🔬 Pure Water / RO System (12)</button>
+</div>
+
+<div class="container">
+
+<!-- ── WASTEWATER SECTION ──────────────────────────────────── -->
+<div id="sec-waste" class="section active">
+  <div class="intro-box">
+    <h3 id="w-intro-title">What is Wastewater Treatment?</h3>
+    <p id="w-intro-body">The spray painting process creates large amounts of contaminated water — paint mist captured by water curtain cabinets mixes with the water and becomes wastewater. This system cleans that water so it can be reused, and safely disposes of the paint sludge. It is a closed-loop system with zero wastewater discharge to drain.</p>
+  </div>
+
+  <div class="process-path">
+    <h4 id="w-path-title">Process Flow:</h4>
+    <div class="path-row" id="w-path-row">
+      <span class="path-step">Spray Booths</span><span class="path-arrow">→</span>
+      <span class="path-step">Recirculation Pool</span><span class="path-arrow">→</span>
+      <span class="path-step">Air Flotation Machine</span><span class="path-arrow">→</span>
+      <span class="path-step">Sludge Pool</span><span class="path-arrow">→</span>
+      <span class="path-step">Filter Press</span><span class="path-arrow">→</span>
+      <span class="path-step">Clean Water ♻ Returned</span>
+    </div>
+  </div>
+
+  <div class="flow-strip" id="waste-flow"></div>
+  <div class="detail-card" id="waste-detail">
+    <h2 id="waste-detail-title">← Click a stage above to learn more</h2>
+    <p id="waste-detail-body">Each stage of the wastewater treatment system has a specific job. Click any box in the flow above to see detailed information about how it works.</p>
+    <div class="chip-row" id="waste-chips"></div>
+  </div>
+</div>
+
+<!-- ── RO SECTION ─────────────────────────────────────────── -->
+<div id="sec-ro" class="section">
+  <div class="intro-box">
+    <h3 id="ro-intro-title">What is the RO Pure Water System?</h3>
+    <p id="ro-intro-body">Tap water contains dissolved minerals (calcium, magnesium, chlorine) that can affect spray paint quality and cause scale buildup in equipment. The Dual-Stage RO-2000 system removes these impurities to produce ultra-pure water at 2 tonnes/hour for use throughout the factory.</p>
+  </div>
+
+  <div class="process-path">
+    <h4 id="ro-path-title">Process Flow:</h4>
+    <div class="path-row" id="ro-path-row">
+      <span class="path-step">Tap Water</span><span class="path-arrow">→</span>
+      <span class="path-step">Multi-Media Filter</span><span class="path-arrow">→</span>
+      <span class="path-step">Carbon Filter</span><span class="path-arrow">→</span>
+      <span class="path-step">Cartridge Filter</span><span class="path-arrow">→</span>
+      <span class="path-step">RO Stage 1</span><span class="path-arrow">→</span>
+      <span class="path-step">RO Stage 2</span><span class="path-arrow">→</span>
+      <span class="path-step">Pure Water 2T/H</span>
+    </div>
+  </div>
+
+  <div class="flow-strip" id="ro-flow"></div>
+  <div class="detail-card" id="ro-detail">
+    <h2 id="ro-detail-title">← Click a stage above to learn more</h2>
+    <p id="ro-detail-body">The RO system uses multiple stages of filtration and reverse osmosis membranes to produce ultra-pure water. Click any stage to see its specifications and function.</p>
+    <div class="chip-row" id="ro-chips"></div>
+    <div class="specs-grid" id="ro-specs"></div>
+  </div>
+
+  <h4 class="section-title" id="ro-sys-title">System Overview</h4>
+  <div class="specs-grid">
+    <div class="spec-item"><div class="spec-label" id="ro-s1">Output</div><div class="spec-val">2 T/H (2,000 L/hr)</div></div>
+    <div class="spec-item"><div class="spec-label" id="ro-s2">Stages</div><div class="spec-val">Dual-Stage RO</div></div>
+    <div class="spec-item"><div class="spec-label" id="ro-s3">Control</div><div class="spec-val">PLC Automatic (KEDA RO-2015)</div></div>
+    <div class="spec-item"><div class="spec-label" id="ro-s4">Frame</div><div class="spec-val">Stainless Steel Skid</div></div>
+    <div class="spec-item"><div class="spec-label" id="ro-s5">Monitoring</div><div class="spec-val">Conductivity meter at each RO stage</div></div>
+    <div class="spec-item"><div class="spec-label" id="ro-s6">Membrane brand</div><div class="spec-val">Huitong LP22-8040</div></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const D={
+  en:{
+    title:"💧 Water Treatment — Visual Guide",
+    sub:"Click any stage to see detailed explanation | Wastewater + Pure Water (RO) Systems",
+    tabWaste:"💧 Wastewater Treatment (11)",tabRO:"🔬 Pure Water / RO System (12)",
+    wIntroTitle:"What is Wastewater Treatment?",
+    wIntroBody:"The spray painting process creates large amounts of contaminated water — paint mist captured by water curtain cabinets mixes with the water and becomes wastewater. This system cleans that water so it can be reused, and safely disposes of the paint sludge. It is a closed-loop system with zero wastewater discharge to drain.",
+    wPathTitle:"Process Flow:",
+    roIntroTitle:"What is the RO Pure Water System?",
+    roIntroBody:"Tap water contains dissolved minerals (calcium, magnesium, chlorine) that can affect spray paint quality and cause scale buildup in equipment. The Dual-Stage RO-2000 system removes these impurities to produce ultra-pure water at 2 tonnes/hour for use throughout the factory.",
+    roPathTitle:"Process Flow:",
+    roSysTitle:"System Overview",
+    clickPrompt:"← Click a stage above to learn more",
+    clickBody:"Each stage of the wastewater treatment system has a specific job. Click any box in the flow above to see detailed information about how it works.",
+    roClickBody:"The RO system uses multiple stages of filtration and reverse osmosis membranes to produce ultra-pure water. Click any stage to see its specifications and function.",
+    specs:{output:"Output",stages:"Stages",control:"Control",frame:"Frame",monitor:"Monitoring",membrane:"Membrane brand"},
+    waste:[
+      {icon:"🎨",name:"Spray Booths\n(Water Curtain)",body:"Four water curtain cabinets are installed in the spray painting area. A continuous flowing water curtain captures paint mist — the spray booth air is exhausted through the water, and paint particles are washed out of the air and into the water below. Two cabinets serve the small spray area; two serve the large recirculation pool area.",chips:[{t:"4 cabinets total",c:""},{t:"Paint mist captured",c:""},{t:"Water curtain method",c:""},{t:"Source of wastewater",c:"red"}],specs:[]},
+      {icon:"🏊",name:"Recirculation Pool",body:"The large underground collection pool receives all wastewater from the spray booths. Capacity is approximately 10.8 m³. Two recirculation pumps (Pump 1 and Pump 2 in dual redundancy) are installed to keep water circulating through the system. Alkali solution is also dosed here to adjust pH.",chips:[{t:"10.8 m³ capacity",c:""},{t:"Dual pumps (redundancy)",c:""},{t:"Alkali pH dosing",c:""},{t:"Heavily contaminated",c:"red"}],specs:[]},
+      {icon:"🫧",name:"Air Flotation Machine",body:"This is the heart of the treatment system. Micro-bubbles (tiny air bubbles) are generated and injected into the wastewater. Paint particles attach to the bubbles and rise to the surface as a floating scum layer. Below the scum, the clarified water can be returned for reuse. The scum and sludge is collected and sent to the sludge pool. The compressed dry air (CDA) supply powers the bubble generation.",chips:[{t:"Micro-bubble injection",c:""},{t:"Paint rises as scum",c:""},{t:"Clarified water reused",c:"green"},{t:"CDA-powered",c:""},{t:"Key separation stage",c:"yellow"}],specs:[]},
+      {icon:"🧪",name:"Sludge Pool +\nReagents A & B",body:"The floating scum from the air flotation machine and settled sludge are collected in the sludge pool. Two chemical reagents are added: Reagent A is a coagulant — it destabilises the paint particles so they clump together. Reagent B is a flocculant — it binds the clumps into larger, heavier flocs that are easier to press in the filter press.",chips:[{t:"Reagent A: Coagulant",c:"yellow"},{t:"Reagent B: Flocculant",c:"yellow"},{t:"Paint particle binding",c:""},{t:"Pre-filter preparation",c:""}],specs:[]},
+      {icon:"🗜️",name:"Filter Press",body:"A diaphragm pump transfers the chemically-treated sludge into the filter press. Inside, the sludge is pressed between filter plates at high pressure. Water is squeezed out through the filter cloth and collected. What remains is a dry 'filter cake' — a solid block of compressed paint sludge. This filter cake is a regulated waste material handed to a licensed specialist contractor for proper environmental disposal.",chips:[{t:"Diaphragm pump transfer",c:""},{t:"High-pressure pressing",c:""},{t:"Filter cake output",c:"red"},{t:"Licensed disposal",c:"red"},{t:"Regulated waste",c:"red"}],specs:[]},
+      {icon:"♻️",name:"Clean Water\nReturned",body:"After treatment through the air flotation machine, the clarified water is pumped back into the recirculation pool and reused in the water curtain spray cabinets. This creates a closed-loop system — no treated water is discharged to drain. Only the solid filter cake leaves the system. This design minimizes water consumption and prevents environmental pollution.",chips:[{t:"Closed-loop system",c:"green"},{t:"Zero discharge to drain",c:"green"},{t:"Water reused in spray booths",c:"green"},{t:"Environmentally friendly",c:"green"}],specs:[]},
+    ],
+    ro:[
+      {icon:"🚰",name:"Tap Water\nInput",body:"Municipal tap water enters via the raw water pump: Nanfang CHM8-4 model, flow rate 8 m³/h, head 33 m, motor power 1.5 kW, 380V power supply. The pump body and impeller are made from SUS304 stainless steel to prevent corrosion.",chips:[{t:"Nanfang CHM8-4",c:""},{t:"8 m³/h flow rate",c:""},{t:"1.5 kW motor",c:""},{t:"SUS304 stainless steel",c:""}],specs:["Flow: 8 m³/h","Head: 33 m","Power: 1.5 kW","Voltage: 380V","Material: SUS304"]},
+      {icon:"🏔️",name:"Multi-Media\nFilter",body:"Water passes through a fibreglass tank (FRP, Φ750×1900 mm) filled with two grades of refined quartz sand (6–8 mesh and 10–20 mesh). The different sand sizes trap suspended solids, turbidity, and large particles in different layers. A Runxin TMF75A automatic valve controller handles backwashing to clean the filter when it gets clogged.",chips:[{t:"FRP tank Φ750mm",c:""},{t:"Quartz sand (2 grades)",c:""},{t:"Removes turbidity",c:""},{t:"Auto backwash (Runxin)",c:"green"}],specs:["Tank: FRP Φ750×1900 mm","Media: Quartz sand (6–8 & 10–20 mesh)","Controller: Runxin TMF75A","Auto backwash: Yes"]},
+      {icon:"🌑",name:"Activated Carbon\nFilter",body:"Another FRP tank (same size) is packed with fruit-shell activated carbon (10–24 mesh). Activated carbon has enormous surface area — the pores adsorb (stick to) chlorine residuals, colour, taste/odour compounds, and dissolved organics that would damage or foul the RO membranes downstream. Also auto-backwashed.",chips:[{t:"Fruit-shell carbon",c:""},{t:"10–24 mesh",c:""},{t:"Removes chlorine",c:"green"},{t:"Removes organics",c:"green"},{t:"Protects RO membranes",c:"green"}],specs:["Tank: FRP Φ750×1900 mm","Media: Fruit-shell activated carbon (10–24 mesh)","Controller: Runxin TMF75A","Purpose: Chlorine + organic removal"]},
+      {icon:"💉",name:"Antiscalant +\nCartridge Filter",body:"Before the high-pressure RO section, two final protections are applied. An antiscalant chemical is metered into the water (40L PE dosing tank, RO-02-07 metering pump) to prevent calcium and magnesium minerals from crystallising and scaling on the RO membranes. Then a security (cartridge) filter with 5 × 40-inch melt-blown PP cartridges (5 μm rating, SUS304 housing) removes any remaining fine particles.",chips:[{t:"Antiscalant dosing",c:"yellow"},{t:"Scale prevention",c:"yellow"},{t:"5 × 40\" PP cartridges",c:""},{t:"5 μm filtration",c:""},{t:"SUS304 housing",c:""}],specs:["Dosing tank: 40L PE","Cartridge filter: 5 × 40 inch","Pore size: 5 μm (melt-blown PP)","Housing: SUS304"]},
+      {icon:"🔵",name:"1st Stage RO\nMembranes",body:"The first high-pressure pump (Nanfang CDLS4-22, 178 m head, 4 kW, 4 m³/h) forces water through 3 pressure vessels (FRP, model 8040), each containing a Huitong LP22-8040 spiral-wound RO membrane. These semi-permeable membranes allow water molecules to pass but block ~95% of dissolved salts, bacteria, and other contaminants. The concentrated 'reject' water is discharged; the purified 'permeate' continues to Stage 2.",chips:[{t:"Nanfang CDLS4-22 pump",c:""},{t:"4 kW, 178 m head",c:""},{t:"3 × Huitong LP22-8040",c:""},{t:"~95% salt rejection",c:"green"},{t:"Permeate continues",c:"green"}],specs:["Pump model: CDLS4-22","Head: 178 m | Flow: 4 m³/h","Power: 4 kW, 380V","Membranes: 3 × LP22-8040 (FRP 8040)","Salt rejection: ~95%"]},
+      {icon:"🔮",name:"2nd Stage RO\nMembranes",body:"The permeate from Stage 1 passes through a second high-pressure pump (Nanfang CDLS4-14, 112 m head, 3 kW) and then through 2 more pressure vessels with Huitong LP22-8040 membranes. This double-pass design achieves ultra-high purity — removing what Stage 1 missed. Conductivity is monitored at this stage with a KEDA CCT-3320V meter; low conductivity = high purity.",chips:[{t:"Nanfang CDLS4-14 pump",c:""},{t:"3 kW, 112 m head",c:""},{t:"2 × Huitong LP22-8040",c:""},{t:"Ultra-high purity",c:"green"},{t:"KEDA conductivity meter",c:""}],specs:["Pump model: CDLS4-14","Head: 112 m | Flow: 3 m³/h","Power: 3 kW, 380V","Membranes: 2 × LP22-8040 (FRP 8040-I)","Monitoring: KEDA CCT-3320V"]},
+      {icon:"✨",name:"Pure Water\nOutput",body:"The finished product from both RO stages is ultra-pure water at a combined output of 2 tonnes/hour (2 T/H). The entire system is controlled by two KEDA RO-2015 PLC controllers for fully automatic operation. The pure water is distributed to production areas where mineral-free water is required — such as paint mixing, spray booths, and ceramic processes.",chips:[{t:"2 T/H output",c:"green"},{t:"Ultra-pure quality",c:"green"},{t:"PLC auto-control",c:""},{t:"KEDA RO-2015",c:""},{t:"Used in production",c:"green"}],specs:["Output: 2 T/H","Controllers: 2 × KEDA RO-2015","Frame: Stainless steel skid","Piping: Stainless (high-P) + UPVC (low-P)"]},
+    ]
+  },
+  th:{
+    title:"💧 ระบบบำบัดน้ำ — คู่มือภาพ",
+    sub:"คลิกที่แต่ละขั้นตอนเพื่อดูคำอธิบายละเอียด | ระบบน้ำเสีย + น้ำบริสุทธิ์ (RO)",
+    tabWaste:"💧 ระบบบำบัดน้ำเสีย (11)",tabRO:"🔬 น้ำบริสุทธิ์ / ระบบ RO (12)",
+    wIntroTitle:"ระบบบำบัดน้ำเสียคืออะไร?",
+    wIntroBody:"กระบวนการพ่นสีสร้างน้ำปนเปื้อนจำนวนมาก ละอองสีที่ถูกดักจับโดยตู้ม่านน้ำผสมกับน้ำและกลายเป็นน้ำเสีย ระบบนี้ทำความสะอาดน้ำเพื่อนำกลับมาใช้ใหม่และกำจัดตะกอนสีอย่างปลอดภัย เป็นระบบวงจรปิดที่ไม่มีการปล่อยน้ำเสียออกสู่ท่อระบาย",
+    wPathTitle:"กระบวนการ:",
+    roIntroTitle:"ระบบน้ำบริสุทธิ์ RO คืออะไร?",
+    roIntroBody:"น้ำประปามีแร่ธาตุที่ละลายอยู่ (แคลเซียม แมกนีเซียม คลอรีน) ที่อาจส่งผลต่อคุณภาพการพ่นสีและทำให้เกิดสเกลในอุปกรณ์ ระบบ RO สองขั้น RO-2000 กำจัดสิ่งปนเปื้อนเหล่านี้เพื่อผลิตน้ำบริสุทธิ์สูงที่ 2 ตัน/ชั่วโมงสำหรับใช้ทั่วโรงงาน",
+    roPathTitle:"กระบวนการ:",
+    roSysTitle:"ภาพรวมระบบ",
+    clickPrompt:"← คลิกขั้นตอนด้านบนเพื่อเรียนรู้เพิ่มเติม",
+    clickBody:"แต่ละขั้นตอนของระบบบำบัดน้ำเสียมีหน้าที่เฉพาะ คลิกกล่องใดก็ได้ในขั้นตอนด้านบนเพื่อดูข้อมูลละเอียด",
+    roClickBody:"ระบบ RO ใช้การกรองหลายขั้นตอนและเมมเบรน RO เพื่อผลิตน้ำบริสุทธิ์ คลิกขั้นตอนใดก็ได้เพื่อดูข้อมูลจำเพาะและหน้าที่",
+    specs:{output:"ผลผลิต",stages:"ขั้นตอน",control:"การควบคุม",frame:"โครง",monitor:"การตรวจสอบ",membrane:"ยี่ห้อเมมเบรน"},
+    waste:[
+      {icon:"🎨",name:"บูธพ่นสี\n(ม่านน้ำ)",body:"ติดตั้งตู้ม่านน้ำ 4 ตู้ในพื้นที่พ่นสี ม่านน้ำที่ไหลต่อเนื่องดักจับละอองสี อากาศในบูธพ่นสีถูกดูดออกผ่านน้ำ และอนุภาคสีถูกล้างออกจากอากาศลงสู่น้ำด้านล่าง",chips:[{t:"4 ตู้รวม",c:""},{t:"ดักจับละอองสี",c:""},{t:"วิธีม่านน้ำ",c:""},{t:"แหล่งน้ำเสีย",c:"red"}],specs:[]},
+      {icon:"🏊",name:"บ่อรีไซเคิล",body:"บ่อเก็บขนาดใหญ่ใต้ดินรับน้ำเสียทั้งหมดจากบูธพ่นสี ความจุประมาณ 10.8 ม³ ติดตั้งปั๊มรีไซเคิล 2 ตัวสำหรับซ้ำซ้อน เพื่อให้น้ำหมุนเวียนตลอดระบบ เติมด่างเพื่อปรับ pH ที่นี่",chips:[{t:"ความจุ 10.8 ม³",c:""},{t:"ปั๊มคู่ (สำรอง)",c:""},{t:"เติมด่างปรับ pH",c:""},{t:"ปนเปื้อนหนัก",c:"red"}],specs:[]},
+      {icon:"🫧",name:"เครื่องลอยอากาศ",body:"นี่คือหัวใจของระบบบำบัด ฟองอากาศขนาดจิ๋วถูกสร้างและอัดเข้าไปในน้ำเสีย อนุภาคสีเกาะติดกับฟองและลอยขึ้นสู่ผิวเป็นชั้นตะกอน น้ำใสด้านล่างสามารถนำกลับมาใช้ใหม่ได้",chips:[{t:"ฉีดฟองอากาศจิ๋ว",c:""},{t:"สีลอยขึ้นเป็นตะกอน",c:""},{t:"นำน้ำใสกลับใช้",c:"green"},{t:"ขั้นตอนแยกสำคัญ",c:"yellow"}],specs:[]},
+      {icon:"🧪",name:"บ่อตะกอน +\nสาร A & B",body:"ตะกอนที่ลอยจากเครื่องลอยอากาศและตะกอนที่ตกถูกเก็บในบ่อตะกอน เพิ่มสารเคมีสองชนิด: สาร A คือสารตกตะกอน — ทำให้อนุภาคสีรวมตัวกัน สาร B คือสารช่วยรวมตะกอน — ผูกก้อนให้ใหญ่ขึ้นและหนักขึ้น",chips:[{t:"สาร A: ตกตะกอน",c:"yellow"},{t:"สาร B: รวมตะกอน",c:"yellow"},{t:"รวมอนุภาคสี",c:""},{t:"เตรียมก่อนกรอง",c:""}],specs:[]},
+      {icon:"🗜️",name:"เครื่องกรองแผ่น",body:"ปั๊มไดอะแฟรมถ่ายโอนตะกอนที่ผ่านการบำบัดเคมีเข้าเครื่องกรองแผ่น แรงดันสูงบีบน้ำออกผ่านผ้ากรอง สิ่งที่เหลือคือ 'เค้กกรอง' แห้ง ของเสียแข็งนี้เป็นวัสดุของเสียที่ถูกควบคุมและต้องส่งให้ผู้รับกำจัดที่มีใบอนุญาต",chips:[{t:"ปั๊มไดอะแฟรม",c:""},{t:"การกดแรงดันสูง",c:""},{t:"ผลผลิตเค้กกรอง",c:"red"},{t:"กำจัดอย่างถูกกฎหมาย",c:"red"}],specs:[]},
+      {icon:"♻️",name:"น้ำสะอาด\nกลับมาใช้",body:"หลังจากการบำบัดผ่านเครื่องลอยอากาศ น้ำใสถูกสูบกลับสู่บ่อรีไซเคิลและนำมาใช้ซ้ำในตู้ม่านน้ำ สร้างระบบวงจรปิด ไม่มีน้ำที่ผ่านการบำบัดถูกปล่อยออกสู่ท่อระบาย มีเพียงเค้กกรองแข็งเท่านั้นที่ออกจากระบบ",chips:[{t:"ระบบวงจรปิด",c:"green"},{t:"ศูนย์การปล่อยสู่ท่อระบาย",c:"green"},{t:"นำน้ำกลับใช้",c:"green"},{t:"รักษ์สิ่งแวดล้อม",c:"green"}],specs:[]},
+    ],
+    ro:[
+      {icon:"🚰",name:"น้ำประปา\nเข้า",body:"น้ำประปาเข้าผ่านปั๊มน้ำดิบ Nanfang CHM8-4 อัตราการไหล 8 ม³/ชม. หัว 33 ม. กำลังมอเตอร์ 1.5 กิโลวัตต์ แหล่งจ่าย 380V ตัวปั๊มและใบพัดทำจากสแตนเลส SUS304 เพื่อป้องกันการกัดกร่อน",chips:[{t:"Nanfang CHM8-4",c:""},{t:"ไหล 8 ม³/ชม.",c:""},{t:"มอเตอร์ 1.5 kW",c:""},{t:"สแตนเลส SUS304",c:""}],specs:["ไหล: 8 ม³/ชม.","หัว: 33 ม.","กำลัง: 1.5 kW","แรงดัน: 380V","วัสดุ: SUS304"]},
+      {icon:"🏔️",name:"ตัวกรอง\nหลายชั้น",body:"น้ำผ่านถัง FRP (Φ750×1900 มม.) ที่บรรจุทรายควอตซ์สองเกรด (6-8 เมช และ 10-20 เมช) ทรายขนาดต่างกันดักจับของแข็งแขวนลอยและความขุ่นในชั้นต่างกัน ตัวควบคุมวาล์วอัตโนมัติ Runxin TMF75A จัดการล้างย้อน",chips:[{t:"ถัง FRP Φ750mm",c:""},{t:"ทรายควอตซ์ 2 เกรด",c:""},{t:"กำจัดความขุ่น",c:""},{t:"ล้างย้อนอัตโนมัติ",c:"green"}],specs:["ถัง: FRP Φ750×1900 มม.","ตัวกลาง: ทรายควอตซ์ (6-8 & 10-20 เมช)","ตัวควบคุม: Runxin TMF75A","ล้างย้อนอัตโนมัติ: ใช่"]},
+      {icon:"🌑",name:"ตัวกรอง\nถ่านกัมมันต์",body:"ถัง FRP อีกถัง (ขนาดเดียวกัน) บรรจุถ่านกัมมันต์เปลือกผลไม้ (10-24 เมช) ถ่านกัมมันต์มีพื้นที่ผิวมหาศาล รูพรุนดูดซับคลอรีนตกค้าง สี กลิ่น และสารอินทรีย์ที่จะทำลายเมมเบรน RO ล้างย้อนอัตโนมัติเช่นกัน",chips:[{t:"ถ่านเปลือกผลไม้",c:""},{t:"10-24 เมช",c:""},{t:"กำจัดคลอรีน",c:"green"},{t:"กำจัดสารอินทรีย์",c:"green"},{t:"ปกป้องเมมเบรน RO",c:"green"}],specs:["ถัง: FRP Φ750×1900 มม.","ตัวกลาง: ถ่านเปลือกผลไม้ (10-24 เมช)","ตัวควบคุม: Runxin TMF75A","วัตถุประสงค์: กำจัดคลอรีน + สารอินทรีย์"]},
+      {icon:"💉",name:"ป้องกันสเกล +\nตัวกรองคาร์ทริดจ์",body:"ก่อนส่วน RO แรงดันสูง มีการป้องกันสองชั้น เคมีป้องกันสเกลถูกเติมเพื่อป้องกันแคลเซียมและแมกนีเซียมจากการตกผลึกบนเมมเบรน จากนั้นตัวกรองความปลอดภัย 5 คาร์ทริดจ์ (40 นิ้ว, PP 5μm, ตัวเรือน SUS304) กำจัดอนุภาคเล็กๆ",chips:[{t:"เติมป้องกันสเกล",c:"yellow"},{t:"ป้องกันสเกล",c:"yellow"},{t:"5 × 40\" คาร์ทริดจ์ PP",c:""},{t:"กรอง 5 μm",c:""},{t:"ตัวเรือน SUS304",c:""}],specs:["ถังเติม: PE 40L","ตัวกรองคาร์ทริดจ์: 5 × 40 นิ้ว","ขนาดรู: 5 μm (PP หลอม)","ตัวเรือน: SUS304"]},
+      {icon:"🔵",name:"RO ขั้นที่ 1",body:"ปั๊มแรงดันสูง (Nanfang CDLS4-22, หัว 178 ม., 4 kW) บังคับน้ำผ่านหม้อแรงดัน 3 ชุด (FRP, รุ่น 8040) ที่มีเมมเบรน Huitong LP22-8040 แต่ละชุด เมมเบรนกึ่งซึมผ่านได้ยอมให้โมเลกุลน้ำผ่านแต่ปิดกั้น ~95% ของเกลือและสารปนเปื้อน",chips:[{t:"ปั๊ม Nanfang CDLS4-22",c:""},{t:"4 kW, หัว 178 ม.",c:""},{t:"3 × Huitong LP22-8040",c:""},{t:"~95% ปฏิเสธเกลือ",c:"green"},{t:"น้ำที่ผ่านดำเนินต่อ",c:"green"}],specs:["รุ่นปั๊ม: CDLS4-22","หัว: 178 ม. | ไหล: 4 ม³/ชม.","กำลัง: 4 kW, 380V","เมมเบรน: 3 × LP22-8040 (FRP 8040)","ปฏิเสธเกลือ: ~95%"]},
+      {icon:"🔮",name:"RO ขั้นที่ 2",body:"น้ำที่ผ่านจากขั้นที่ 1 ผ่านปั๊มแรงดันสูงตัวที่สอง (Nanfang CDLS4-14, หัว 112 ม., 3 kW) แล้วผ่านหม้อแรงดันอีก 2 ชุดพร้อมเมมเบรน Huitong LP22-8040 การออกแบบสองรอบนี้บรรลุความบริสุทธิ์สูงมาก การนำไฟฟ้าวัดโดยเครื่องวัด KEDA CCT-3320V",chips:[{t:"ปั๊ม Nanfang CDLS4-14",c:""},{t:"3 kW, หัว 112 ม.",c:""},{t:"2 × Huitong LP22-8040",c:""},{t:"ความบริสุทธิ์สูงมาก",c:"green"},{t:"วัดการนำไฟฟ้า KEDA",c:""}],specs:["รุ่นปั๊ม: CDLS4-14","หัว: 112 ม. | ไหล: 3 ม³/ชม.","กำลัง: 3 kW, 380V","เมมเบรน: 2 × LP22-8040 (FRP 8040-I)","ตรวจสอบ: KEDA CCT-3320V"]},
+      {icon:"✨",name:"ผลผลิต\nน้ำบริสุทธิ์",body:"ผลิตภัณฑ์สำเร็จรูปจากทั้งสองขั้น RO คือน้ำบริสุทธิ์สูงที่ผลผลิตรวม 2 ตัน/ชั่วโมง ระบบทั้งหมดควบคุมโดยตัวควบคุม PLC KEDA RO-2015 สองชุดสำหรับการทำงานอัตโนมัติ น้ำบริสุทธิ์จ่ายไปยังพื้นที่การผลิตที่ต้องการน้ำปราศจากแร่",chips:[{t:"ผลผลิต 2 T/H",c:"green"},{t:"คุณภาพบริสุทธิ์สูง",c:"green"},{t:"ควบคุม PLC อัตโนมัติ",c:""},{t:"KEDA RO-2015",c:""},{t:"ใช้ในการผลิต",c:"green"}],specs:["ผลผลิต: 2 T/H","ตัวควบคุม: 2 × KEDA RO-2015","โครง: โครงเหล็กสแตนเลส","ท่อ: สแตนเลส (แรงดันสูง) + UPVC (แรงดันต่ำ)"]},
+    ]
+  }
+};
+
+let lang='en', section='waste';
+let activeWaste=null, activeRO=null;
+
+function buildFlows(){
+  buildFlow('waste');buildFlow('ro');
+}
+function buildFlow(sys){
+  const items=D[lang][sys];
+  const el=document.getElementById(sys+'-flow');
+  el.innerHTML='';
+  items.forEach((item,i)=>{
+    const nd=document.createElement('div');
+    nd.className='flow-node'+(activeId(sys)===i?' active':'');
+    nd.id=`fn-${sys}-${i}`;
+    nd.onclick=()=>selectStage(sys,i);
+    nd.innerHTML=`<div class="node-box"><div class="node-icon">${item.icon}</div><div class="node-name">${item.name.replace('\n','<br>')}</div></div>`;
+    el.appendChild(nd);
+    if(i<items.length-1){const arr=document.createElement('div');arr.className='node-arrow';arr.textContent='→';el.appendChild(arr);}
+  });
+}
+function activeId(sys){return sys==='waste'?activeWaste:activeRO;}
+
+function selectStage(sys,i){
+  if(sys==='waste') activeWaste=i; else activeRO=i;
+  buildFlow(sys);
+  const item=D[lang][sys][i];
+  document.getElementById(sys+'-detail-title').textContent=item.icon+' '+item.name.replace('\n',' ');
+  document.getElementById(sys+'-detail-body').textContent=item.body;
+  const chipEl=document.getElementById(sys+'-chips');
+  chipEl.innerHTML=item.chips.map(c=>`<span class="chip ${c.c}">${c.t}</span>`).join('');
+  const specEl=document.getElementById(sys+'-specs');
+  if(specEl) specEl.innerHTML=item.specs.map(s=>{const[k,...v]=s.split(':');return`<div class="spec-item"><div class="spec-label">${k}</div><div class="spec-val">${v.join(':').trim()}</div></div>`;}).join('');
+}
+
+function setSection(s,btn){
+  section=s;
+  document.getElementById('sec-waste').className='section'+(s==='waste'?' active':'');
+  document.getElementById('sec-ro').className='section'+(s==='ro'?' active':'');
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleLang(){
+  lang=lang==='en'?'th':'en';
+  document.getElementById('lang-btn').textContent=lang==='en'?'ภาษาไทย':'English';
+  applyLang();
+}
+function applyLang(){
+  const d=D[lang];
+  document.getElementById('h-title').textContent=d.title;
+  document.getElementById('h-sub').textContent=d.sub;
+  document.getElementById('tab-waste').textContent=d.tabWaste;
+  document.getElementById('tab-ro').textContent=d.tabRO;
+  document.getElementById('w-intro-title').textContent=d.wIntroTitle;
+  document.getElementById('w-intro-body').textContent=d.wIntroBody;
+  document.getElementById('w-path-title').textContent=d.wPathTitle;
+  document.getElementById('ro-intro-title').textContent=d.roIntroTitle;
+  document.getElementById('ro-intro-body').textContent=d.roIntroBody;
+  document.getElementById('ro-path-title').textContent=d.roPathTitle;
+  document.getElementById('ro-sys-title').textContent=d.roSysTitle;
+  buildFlows();
+  if(activeWaste!==null) selectStage('waste',activeWaste);
+  else{document.getElementById('waste-detail-title').textContent=d.clickPrompt;document.getElementById('waste-detail-body').textContent=d.clickBody;document.getElementById('waste-chips').innerHTML='';}
+  if(activeRO!==null) selectStage('ro',activeRO);
+  else{document.getElementById('ro-detail-title').textContent=d.clickPrompt;document.getElementById('ro-detail-body').textContent=d.roClickBody;document.getElementById('ro-chips').innerHTML='';if(document.getElementById('ro-specs'))document.getElementById('ro-specs').innerHTML='';}
+  // update spec labels
+  const sl=d.specs;
+  const keys=['output','stages','control','frame','monitor','membrane'];
+  const labels=['ro-s1','ro-s2','ro-s3','ro-s4','ro-s5','ro-s6'];
+  keys.forEach((k,i)=>{const el=document.getElementById(labels[i]);if(el)el.textContent=sl[k];});
+}
+
+buildFlows();
+</script>
+</body>
+</html>

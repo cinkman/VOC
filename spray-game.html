@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spray Painting Line Adventure</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
+#lang-btn{position:fixed;top:14px;right:14px;z-index:999;background:#d97706;border:none;color:#fff;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:14px;font-weight:700}
+#header{text-align:center;padding:16px 0 6px;background:linear-gradient(180deg,#0f172a,transparent)}
+#header h1{font-size:1.9rem;background:linear-gradient(90deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900}
+#header p{color:#94a3b8;font-size:.9rem;margin-top:4px}
+#score-bar{display:flex;justify-content:center;gap:28px;padding:6px 0;background:#0f172a80;font-size:.83rem}
+.stat{display:flex;align-items:center;gap:5px}.stat-val{color:#fbbf24;font-weight:700;font-size:.95rem}
+#main{display:flex;flex-direction:column;align-items:center;padding:10px}
+#progress-wrap{width:100%;max-width:1100px;margin-bottom:8px;background:#0f172a;border-radius:8px;overflow:hidden;height:20px;border:1px solid #1e3a5f}
+#progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#d97706,#f59e0b);transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:.73rem;font-weight:700;color:#fff}
+canvas{display:block;width:100%;border-radius:12px;border:1px solid #1e3a5f;max-width:1100px}
+#info-panel{width:100%;max-width:1100px;margin-top:10px;background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:14px 18px;min-height:85px}
+#info-title{font-size:1.05rem;font-weight:700;color:#fbbf24;margin-bottom:5px}
+#info-body{font-size:.88rem;color:#cbd5e1;line-height:1.6}
+#chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{background:#451a03;border-radius:20px;padding:4px 13px;font-size:.76rem;color:#fde68a;border:1px solid #92400e}
+#controls{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.btn{padding:9px 20px;border:none;border-radius:24px;font-weight:700;cursor:pointer;font-size:.88rem;transition:.2s}
+.btn-orange{background:linear-gradient(90deg,#c2410c,#f97316);color:#fff}.btn-orange:hover{filter:brightness(1.15)}
+.btn-gray{background:#334155;color:#94a3b8}.btn-gray:hover{background:#475569}
+.btn-green{background:linear-gradient(90deg,#15803d,#22c55e);color:#fff}.btn-green:hover{filter:brightness(1.15)}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#0a0a1a;padding:9px 26px;border-radius:24px;font-weight:700;font-size:.95rem;display:none;z-index:1000;box-shadow:0 4px 20px #0008}
+</style>
+</head>
+<body>
+<button id="lang-btn" onclick="toggleLang()">ภาษาไทย</button>
+<div id="toast"></div>
+<div id="header">
+  <h1 id="h-title">☕ Spray Painting Line Adventure</h1>
+  <p id="h-sub">Watch cups travel through 6 stations! Click each station to learn more.</p>
+</div>
+<div id="score-bar">
+  <div class="stat"><span id="lbl-cups">Cups Finished:</span> <span class="stat-val" id="stat-cups">0</span></div>
+  <div class="stat"><span id="lbl-stage">Active Station:</span> <span class="stat-val" id="stat-stage">—</span></div>
+  <div class="stat"><span id="lbl-speed">Belt Speed:</span> <span class="stat-val" id="stat-speed">1×</span></div>
+</div>
+<div id="main">
+  <div id="progress-wrap"><div id="progress-bar">0%</div></div>
+  <canvas id="c" width="1100" height="400"></canvas>
+  <div id="info-panel">
+    <div id="info-title">Welcome to the Thermos Cup Spray Painting Line!</div>
+    <div id="info-body">Cups travel from left to right through 6 automated stations. Click any station to learn what happens there. Use the controls below to add cups or change belt speed.</div>
+    <div id="chips"></div>
+  </div>
+  <div id="controls">
+    <button class="btn btn-orange" onclick="addCup()" id="btn-cup">☕ Add Cup</button>
+    <button class="btn btn-orange" onclick="addBatch()" id="btn-batch">☕☕☕ Batch (5 cups)</button>
+    <button class="btn btn-green" onclick="cycleSpeed()" id="btn-speed">⚡ Speed Up</button>
+    <button class="btn btn-gray" onclick="togglePause()" id="btn-pause">⏸ Pause</button>
+    <button class="btn btn-gray" onclick="resetGame()" id="btn-reset">↺ Reset</button>
+  </div>
+</div>
+<script>
+const D={
+  en:{
+    title:"☕ Spray Painting Line Adventure",
+    sub:"Watch cups travel through 6 stations! Click each station to learn more.",
+    cups:"Cups Finished:",stage:"Active Station:",speed:"Belt Speed:",
+    welcome:"Welcome to the Thermos Cup Spray Painting Line!",
+    welcomeBody:"Cups travel from left to right through 6 automated stations. Click any station to learn what happens there. Use the controls below to add cups or change belt speed.",
+    btnCup:"☕ Add Cup",btnBatch:"☕☕☕ Batch (5 cups)",btnSpeed:"⚡ Speed Up",
+    btnPause:"⏸ Pause",btnResume:"▶ Resume",btnReset:"↺ Reset",
+    toastCup:"Cup added to the line!",toastBatch:"5 cups added!",toastDone:"Cup finished! Quality: ✓",
+    speeds:["1×","2×","3×"],
+    stations:[
+      {name:"Air Gun Dust Removal",icon:"💨",
+       body:"A high-pressure air gun blows compressed air (0.6–0.8 MPa) across the cup surface from multiple angles. This removes dust particles, metal shavings, and fingerprints that would cause defects in the paint film. Efficiency: ≥98% visible particle removal.",
+       chips:["0.6–0.8 MPa air","Multi-angle nozzle","≥98% dust removal","Pre-paint prep"]},
+      {name:"Manual Loading",icon:"🙌",
+       body:"An operator places cups onto the conveyor belt fixtures with the spray surface facing up. The rotating positioning table helps align each cup correctly. The fixture diameter is adjustable (Ø50–120mm) to accommodate different cup sizes. Belt speed: 0.5–2 m/min (VFD controlled).",
+       chips:["Ø50–120mm adjustable","VFD belt control","0.5–2 m/min","Spray face up"]},
+      {name:"Hot Air Pre-Heat",icon:"🌡️",
+       body:"The cup body is pre-heated to 40–60°C using a hot air circulating oven (stainless steel inner liner, PID temperature control). Pre-heating expands the metal surface slightly and removes residual moisture, which significantly improves paint adhesion — preventing peeling later.",
+       chips:["40–60°C target","PID temp control","2–5 min duration","Improves adhesion","Moisture removal"]},
+      {name:"Reciprocating Spray",icon:"🎨",
+       body:"A servo-driven reciprocating machine (1.5m stroke) moves an air spray gun back and forth over each cup automatically. The nozzle diameter is 1.2–1.5mm; spray speed is 0.3–0.6 m/s (programmable). 2–3 spray passes achieve a film thickness of 15–30 μm (±2 μm tolerance). A gear pump with viscosity controller (12–18 sec, DIN-4 cup) feeds the paint at consistent pressure.",
+       chips:["Servo reciprocating","1.5m stroke","15–30 μm film","±2 μm tolerance","2–3 passes","Viscosity: 12–18s"]},
+      {name:"Hot Air Curing",icon:"🔥",
+       body:"The freshly-painted cup enters a high-temperature tunnel oven. Curing at 150–180°C for 8–15 minutes cross-links the paint molecules, creating a hard, durable film that bonds permanently to the metal. The curing temperature is higher than the pre-heat stage and must be reached before timing begins.",
+       chips:["150–180°C","8–15 minutes","Cross-links paint","Permanent bond","High-temp fan"]},
+      {name:"Cooling & Unloading",icon:"❄️",
+       body:"After the curing oven, cups pass over cooling fans that rapidly bring the temperature down to room temperature. Cooled cups automatically slide down a chute into a collection basket. The finished cups have a smooth, even paint film ready for quality inspection and packaging.",
+       chips:["Cooling fans","Auto slide chute","Room temperature","Collection basket","Ready for QC"]}
+    ]
+  },
+  th:{
+    title:"☕ การผจญภัยสายการพ่นสีแก้ว",
+    sub:"ดูแก้วเดินทางผ่าน 6 สถานี! คลิกแต่ละสถานีเพื่อเรียนรู้เพิ่มเติม",
+    cups:"แก้วที่เสร็จแล้ว:",stage:"สถานีที่ใช้งาน:",speed:"ความเร็วสายพาน:",
+    welcome:"ยินดีต้อนรับสู่สายการพ่นสีแก้วเทอร์มอส!",
+    welcomeBody:"แก้วเดินทางจากซ้ายไปขวาผ่าน 6 สถานีอัตโนมัติ คลิกที่สถานีใดก็ได้เพื่อเรียนรู้ว่าเกิดอะไรขึ้นที่นั่น ใช้ตัวควบคุมด้านล่างเพื่อเพิ่มแก้วหรือเปลี่ยนความเร็วสายพาน",
+    btnCup:"☕ เพิ่มแก้ว",btnBatch:"☕☕☕ แบทช์ (5 แก้ว)",btnSpeed:"⚡ เพิ่มความเร็ว",
+    btnPause:"⏸ หยุดชั่วคราว",btnResume:"▶ เล่นต่อ",btnReset:"↺ รีเซ็ต",
+    toastCup:"เพิ่มแก้วบนสายแล้ว!",toastBatch:"เพิ่ม 5 แก้วแล้ว!",toastDone:"แก้วเสร็จแล้ว! คุณภาพ: ✓",
+    speeds:["1×","2×","3×"],
+    stations:[
+      {name:"ปืนลมกำจัดฝุ่น",icon:"💨",
+       body:"ปืนลมแรงดันสูงเป่าอากาศอัด (0.6-0.8 MPa) ผ่านผิวแก้วจากหลายมุม กำจัดอนุภาคฝุ่น เศษโลหะ และรอยนิ้วมือที่จะทำให้เกิดข้อบกพร่องในฟิล์มสี ประสิทธิภาพ: ≥98% กำจัดอนุภาคที่มองเห็นได้",
+       chips:["ลม 0.6–0.8 MPa","หัวฉีดหลายมุม","≥98% กำจัดฝุ่น","เตรียมก่อนพ่นสี"]},
+      {name:"โหลดด้วยมือ",icon:"🙌",
+       body:"ผู้ปฏิบัติงานวางแก้วบนอุปกรณ์ยึดสายพานโดยให้ผิวพ่นสีหันขึ้น โต๊ะวางตำแหน่งหมุนช่วยจัดแนวแก้วแต่ละใบอย่างถูกต้อง เส้นผ่านศูนย์กลางอุปกรณ์ยึดปรับได้ (Ø50-120mm) ความเร็วสายพาน: 0.5-2 ม./นาที (ควบคุม VFD)",
+       chips:["Ø50–120mm ปรับได้","ควบคุม VFD","0.5–2 ม./นาที","ผิวพ่นหันขึ้น"]},
+      {name:"อุ่นร้อนล่วงหน้า",icon:"🌡️",
+       body:"ตัวแก้วอุ่นล่วงหน้าถึง 40-60°C โดยใช้เตาอบหมุนเวียนลมร้อน (ซับในสแตนเลส, ควบคุมอุณหภูมิ PID) การอุ่นล่วงหน้าขยายผิวโลหะเล็กน้อยและกำจัดความชื้นตกค้าง ซึ่งช่วยปรับปรุงการยึดเกาะของสีอย่างมีนัยสำคัญ",
+       chips:["เป้าหมาย 40–60°C","ควบคุม PID","2–5 นาที","ปรับปรุงการยึดเกาะ","กำจัดความชื้น"]},
+      {name:"เครื่องพ่นสีซิกแซก",icon:"🎨",
+       body:"เครื่องซิกแซกขับเคลื่อนด้วยเซอร์โว (ช่วง 1.5 ม.) เลื่อนปืนพ่นสีไปมาเหนือแก้วแต่ละใบโดยอัตโนมัติ เส้นผ่านศูนย์กลางหัวฉีด 1.2-1.5 มม.; ความเร็วพ่น 0.3-0.6 ม./วิ พ่น 2-3 รอบบรรลุความหนาฟิล์ม 15-30 μm (ความคลาดเคลื่อน ±2 μm)",
+       chips:["ซิกแซกเซอร์โว","ช่วง 1.5 ม.","ฟิล์ม 15–30 μm","±2 μm คลาดเคลื่อน","2–3 รอบ","ความหนืด: 12–18s"]},
+      {name:"อบแห้งด้วยลมร้อน",icon:"🔥",
+       body:"แก้วที่เพิ่งพ่นสีเข้าเตาอบอุโมงค์อุณหภูมิสูง การอบที่ 150-180°C เป็นเวลา 8-15 นาทีเชื่อมขวางโมเลกุลสี สร้างฟิล์มแข็งและทนทานที่ยึดติดถาวรกับโลหะ อุณหภูมิการอบต้องสูงกว่าการอุ่นล่วงหน้า",
+       chips:["150–180°C","8–15 นาที","เชื่อมขวางสี","ยึดติดถาวร","พัดลมอุณหภูมิสูง"]},
+      {name:"ระบายความร้อนและขนถ่าย",icon:"❄️",
+       body:"หลังจากเตาอบ แก้วผ่านพัดลมระบายความร้อนที่ลดอุณหภูมิลงอย่างรวดเร็วจนถึงอุณหภูมิห้อง แก้วที่เย็นแล้วจะไถลลงรางรวบรวมโดยอัตโนมัติ แก้วสำเร็จรูปมีฟิล์มสีเรียบสม่ำเสมอพร้อมตรวจสอบคุณภาพและบรรจุหีบห่อ",
+       chips:["พัดลมระบายความร้อน","รางไถลอัตโนมัติ","อุณหภูมิห้อง","ตะกร้าเก็บ","พร้อม QC"]}
+    ]
+  }
+};
+
+let lang='en', paused=false, speedIdx=0, cupsFinished=0;
+const speeds=[1,2,3];
+let activeStage=null;
+
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const W=1100,H=400;
+
+// 6 stations
+const STATIONS=[
+  {x:20, y:60,w:155,h:270,color:'#1e3a5f',glow:'#38bdf8'},
+  {x:200,y:60,w:155,h:270,color:'#3b1a00',glow:'#f97316'},
+  {x:380,y:60,w:155,h:270,color:'#1a0533',glow:'#c084fc'},
+  {x:560,y:60,w:165,h:270,color:'#1a0a00',glow:'#f59e0b'},
+  {x:750,y:60,w:155,h:270,color:'#3f0000',glow:'#f87171'},
+  {x:930,y:60,w:150,h:270,color:'#001a2e',glow:'#7dd3fc'},
+];
+const BELT_Y=340;
+const STATION_CENTERS=STATIONS.map(s=>s.x+s.w/2);
+
+// Cups on belt
+let cups=[];
+let cupId=0;
+let animT=0;
+
+function addCup(){
+  cups.push({id:cupId++,x:-30,stageIdx:-1,color:'#94a3b8',paintPct:0,done:false,wobble:Math.random()*Math.PI*2});
+  showToast(D[lang].toastCup);
+}
+function addBatch(){
+  for(let i=0;i<5;i++) setTimeout(()=>addCup(),i*300);
+  showToast(D[lang].toastBatch);
+}
+
+function cycleSpeed(){
+  speedIdx=(speedIdx+1)%3;
+  document.getElementById('stat-speed').textContent=D[lang].speeds[speedIdx];
+  document.getElementById('btn-speed').textContent='⚡ '+D[lang].speeds[(speedIdx+1)%3];
+}
+
+function togglePause(){paused=!paused;document.getElementById('btn-pause').textContent=paused?D[lang].btnResume:D[lang].btnPause;}
+function resetGame(){cups=[];cupsFinished=0;activeStage=null;document.getElementById('stat-cups').textContent=0;updateProgress();}
+
+let toastT;
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2200);}
+
+function updateProgress(){
+  const p=Math.min(100,cupsFinished*5);
+  const b=document.getElementById('progress-bar');b.style.width=p+'%';b.textContent=p+'%';
+}
+
+// ─── Draw ────────────────────────────────────────────────────────────────────
+function drawBelt(){
+  // belt
+  ctx.save();
+  ctx.fillStyle='#1e293b';
+  ctx.fillRect(0,BELT_Y-18,W,36);
+  // belt segments
+  const offset=(animT*2)%40;
+  ctx.strokeStyle='#334155';ctx.lineWidth=2;
+  for(let x=-40+offset;x<W+40;x+=40){
+    ctx.beginPath();ctx.moveTo(x,BELT_Y-18);ctx.lineTo(x,BELT_Y+18);ctx.stroke();
+  }
+  // belt shine
+  ctx.fillStyle='rgba(255,255,255,.04)';
+  ctx.fillRect(0,BELT_Y-18,W,8);
+  ctx.restore();
+}
+
+function drawStation(s,idx,highlight){
+  ctx.save();
+  if(highlight){ctx.shadowColor=s.glow;ctx.shadowBlur=30;}
+  const g=ctx.createLinearGradient(s.x,s.y,s.x,s.y+s.h);
+  g.addColorStop(0,s.color+'ee');g.addColorStop(1,s.color+'55');
+  ctx.fillStyle=g;ctx.strokeStyle=highlight?s.glow:s.color+'bb';ctx.lineWidth=highlight?2.5:1.5;
+  ctx.beginPath();ctx.roundRect(s.x,s.y,s.w,s.h,10);ctx.fill();ctx.stroke();
+
+  // internals
+  ctx.beginPath();ctx.roundRect(s.x,s.y,s.w,s.h,10);ctx.clip();
+  const cx=s.x+s.w/2, cy=s.y+s.h/2;
+  switch(idx){
+    case 0:// air blast fan
+      for(let l=0;l<5;l++){const lx=s.x+15+l*25,a=Math.sin(animT*.08+l)*.3;ctx.strokeStyle=`rgba(56,189,248,${.4+Math.sin(animT*.1+l)*.2})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,s.y+40);ctx.lineTo(lx+Math.sin(a)*20,s.y+s.h-20);ctx.stroke();}
+      break;
+    case 1:// conveyor + arm
+      ctx.fillStyle='rgba(249,115,22,.25)';ctx.fillRect(s.x+20,cy-20,s.w-40,40);
+      ctx.strokeStyle='rgba(249,115,22,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,s.y+30);ctx.lineTo(cx,cy-20);ctx.stroke();
+      break;
+    case 2:// heat wavy lines
+      for(let h=0;h<5;h++){ctx.strokeStyle=`rgba(192,132,252,${.3+h*.05})`;ctx.lineWidth=2;ctx.beginPath();for(let x2=s.x+10;x2<s.x+s.w-10;x2+=4){ctx.lineTo(x2,s.y+55+h*35+Math.sin((x2+animT*3)*0.1)*8);}ctx.stroke();}
+      break;
+    case 3:// spray arm animation
+      const armY=s.y+50+Math.sin(animT*.06)*60;
+      ctx.fillStyle='rgba(245,158,11,.8)';ctx.fillRect(cx-4,s.y+20,8,armY-s.y-20);
+      // paint spray fan
+      for(let sp=0;sp<8;sp++){const sa=(sp-3.5)*.12,sdx=Math.sin(sa)*30,sdy=Math.cos(sa)*30;ctx.strokeStyle=`rgba(251,146,60,${.5-sp*.02})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,armY);ctx.lineTo(cx+sdx,armY+sdy);ctx.stroke();}
+      ctx.beginPath();ctx.arc(cx,armY,4,0,Math.PI*2);ctx.fillStyle='#fbbf24';ctx.fill();
+      break;
+    case 4:// flames
+      for(let fi=0;fi<4;fi++){const fx=s.x+20+fi*32,fbase=s.y+s.h-20,fh=60+Math.sin(animT*.1+fi*1.3)*18;const fg=ctx.createLinearGradient(fx,fbase,fx,fbase-fh);fg.addColorStop(0,'rgba(239,68,68,.9)');fg.addColorStop(.6,'rgba(251,146,60,.7)');fg.addColorStop(1,'rgba(253,224,71,.3)');ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(fx,fbase);ctx.quadraticCurveTo(fx-10,fbase-fh/2,fx,fbase-fh);ctx.quadraticCurveTo(fx+10,fbase-fh/2,fx+14,fbase);ctx.fill();}
+      break;
+    case 5:// snowflakes / cool
+      for(let sf=0;sf<6;sf++){const sfx=s.x+15+sf*22,sfy=s.y+50+Math.sin(animT*.05+sf*1.1)*40;ctx.fillStyle=`rgba(125,211,252,${.5+Math.cos(animT*.07+sf)*.3})`;ctx.font='18px serif';ctx.textAlign='center';ctx.fillText('❄',sfx,sfy);}
+      break;
+  }
+  ctx.restore();
+
+  // number badge
+  ctx.save();
+  ctx.beginPath();ctx.arc(s.x+s.w/2,s.y+20,13,0,Math.PI*2);ctx.fillStyle=s.glow;ctx.fill();
+  ctx.fillStyle='#000';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';ctx.fillText(idx+1,s.x+s.w/2,s.y+25);
+  // label
+  const nm=D[lang].stations[idx].name;const words=nm.split(' ');
+  let lineY=s.y+46,line='';
+  ctx.fillStyle='#f1f5f9';ctx.font='bold 10px Segoe UI';
+  for(const w of words){const t2=line+w+' ';if(ctx.measureText(t2).width>s.w-10&&line!==''){ctx.fillText(line.trim(),s.x+s.w/2,lineY);line=w+' ';lineY+=14;}else line=t2;}
+  ctx.fillText(line.trim(),s.x+s.w/2,lineY);
+  // icon
+  ctx.font='22px serif';ctx.fillText(D[lang].stations[idx].icon,s.x+s.w/2,s.y+s.h-14);
+  ctx.restore();
+}
+
+function cupColor(paintPct){
+  // interpolate grey → orange/gold
+  const r=Math.round(148+107*(paintPct/100));
+  const g=Math.round(163+63*(paintPct/100));
+  const b=Math.round(184-64*(paintPct/100));
+  return`rgb(${r},${g},${b})`;
+}
+
+function drawCup(cup){
+  ctx.save();
+  const cx=cup.x, cy=BELT_Y-28;
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  ctx.beginPath();ctx.ellipse(cx,BELT_Y-4,18,6,0,0,Math.PI*2);ctx.fill();
+  // cup body
+  ctx.fillStyle=cupColor(cup.paintPct);
+  ctx.beginPath();ctx.roundRect(cx-12,cy-24,24,30,4);ctx.fill();
+  // cup handle
+  ctx.strokeStyle=cupColor(cup.paintPct);ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(cx+12,cy-10,7,-.5,Math.PI*.7);ctx.stroke();
+  // paint drips on cup if painting
+  if(cup.stageIdx===3&&cup.paintPct<100){
+    ctx.fillStyle='rgba(251,146,60,.7)';
+    ctx.fillRect(cx-8,cy-24,4,cup.paintPct*.1+2);
+    ctx.fillRect(cx+3,cy-24,4,cup.paintPct*.08+1);
+  }
+  // done checkmark
+  if(cup.done){ctx.fillStyle='#4ade80';ctx.font='14px serif';ctx.textAlign='center';ctx.fillText('✓',cx,cy-26);}
+  ctx.restore();
+}
+
+function updateCups(){
+  const spd=speeds[speedIdx]*1.4;
+  const toRemove=[];
+  for(const cup of cups){
+    if(cup.done){cup.x+=spd*1.5;if(cup.x>W+40) toRemove.push(cup);continue;}
+    cup.x+=spd;
+    // determine which station cup is in
+    let inStation=-1;
+    for(let i=0;i<STATIONS.length;i++){
+      const s=STATIONS[i];
+      if(cup.x>s.x+10&&cup.x<s.x+s.w-10){inStation=i;break;}
+    }
+    cup.stageIdx=inStation;
+    // painting progress at station 3
+    if(inStation===3) cup.paintPct=Math.min(100,cup.paintPct+(spd*0.4));
+    // mark done after station 5
+    if(cup.x>STATIONS[5].x+STATIONS[5].w){
+      cup.done=true;cupsFinished++;
+      document.getElementById('stat-cups').textContent=cupsFinished;
+      updateProgress();
+      showToast(D[lang].toastDone);
+    }
+  }
+  cups=cups.filter(c=>!toRemove.includes(c));
+}
+
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(W/rect.width);
+  const my=(e.clientY-rect.top)*(H/rect.height);
+  for(let i=0;i<STATIONS.length;i++){
+    const s=STATIONS[i];
+    if(mx>=s.x&&mx<=s.x+s.w&&my>=s.y&&my<=s.y+s.h){
+      activeStage=i;showStageInfo(i);return;
+    }
+  }
+});
+function showStageInfo(i){
+  const sd=D[lang].stations[i];
+  document.getElementById('info-title').textContent=sd.icon+' '+sd.name;
+  document.getElementById('info-body').textContent=sd.body;
+  document.getElementById('chips').innerHTML=sd.chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('stat-stage').textContent=sd.name;
+}
+
+function toggleLang(){
+  lang=lang==='en'?'th':'en';
+  document.getElementById('lang-btn').textContent=lang==='en'?'ภาษาไทย':'English';
+  document.getElementById('h-title').textContent=D[lang].title;
+  document.getElementById('h-sub').textContent=D[lang].sub;
+  document.getElementById('btn-cup').textContent=D[lang].btnCup;
+  document.getElementById('btn-batch').textContent=D[lang].btnBatch;
+  document.getElementById('btn-speed').textContent='⚡ '+D[lang].speeds[(speedIdx+1)%3];
+  document.getElementById('btn-pause').textContent=paused?D[lang].btnResume:D[lang].btnPause;
+  document.getElementById('btn-reset').textContent=D[lang].btnReset;
+  document.getElementById('lbl-cups').textContent=D[lang].cups;
+  document.getElementById('lbl-stage').textContent=D[lang].stage;
+  document.getElementById('lbl-speed').textContent=D[lang].speed;
+  if(activeStage!==null) showStageInfo(activeStage);
+  else{document.getElementById('info-title').textContent=D[lang].welcome;document.getElementById('info-body').textContent=D[lang].welcomeBody;document.getElementById('chips').innerHTML='';}
+}
+
+function draw(){
+  animT++;
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0f172a');bg.addColorStop(1,'#020617');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  for(let i=0;i<STATIONS.length;i++) drawStation(STATIONS[i],i,activeStage===i);
+
+  // arrows between stations
+  ctx.fillStyle='rgba(148,163,184,.4)';ctx.font='16px serif';ctx.textAlign='center';
+  for(let i=0;i<STATIONS.length-1;i++){
+    const s=STATIONS[i];ctx.fillText('→',s.x+s.w+16,BELT_Y+6);
+  }
+
+  drawBelt();
+  for(const c of cups) drawCup(c);
+
+  if(!paused){
+    updateCups();
+    // auto-add cups slowly
+    if(animT%280===0) addCup();
+  }
+  requestAnimationFrame(draw);
+}
+
+// start with a few cups
+setTimeout(()=>{addCup();},400);
+setTimeout(()=>{addCup();},1100);
+setTimeout(()=>{addCup();},1800);
+draw();
+</script>
+</body>
+</html>

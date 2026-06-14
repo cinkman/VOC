@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Treatment Adventure</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020617;font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
+#lang-btn{position:fixed;top:14px;right:14px;z-index:999;background:#0e7490;border:none;color:#fff;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:14px;font-weight:700}
+#header{text-align:center;padding:16px 0 6px;background:linear-gradient(180deg,#0f172a,transparent)}
+#header h1{font-size:1.9rem;background:linear-gradient(90deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900}
+#header p{color:#94a3b8;font-size:.9rem;margin-top:4px}
+#mode-tabs{display:flex;justify-content:center;gap:10px;padding:8px 0}
+.mtab{padding:9px 24px;border-radius:24px;border:2px solid #1e3a5f;background:transparent;color:#64748b;font-weight:700;cursor:pointer;font-size:.88rem;transition:.2s}
+.mtab.active{background:#0e7490;border-color:#06b6d4;color:#fff}
+#score-bar{display:flex;justify-content:center;gap:28px;padding:6px 0;background:#0f172a80;font-size:.83rem}
+.stat{display:flex;align-items:center;gap:5px}.stat-val{color:#22d3ee;font-weight:700;font-size:.95rem}
+#main{display:flex;flex-direction:column;align-items:center;padding:10px}
+#purify-bar-wrap{width:100%;max-width:1100px;margin-bottom:8px;background:#0f172a;border-radius:8px;overflow:hidden;height:20px;border:1px solid #1e3a5f}
+#purify-bar{height:100%;width:0%;background:linear-gradient(90deg,#0891b2,#06b6d4);transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:.73rem;font-weight:700;color:#fff}
+canvas{display:block;width:100%;border-radius:12px;border:1px solid #1e3a5f;max-width:1100px}
+#info-panel{width:100%;max-width:1100px;margin-top:10px;background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:14px 18px;min-height:85px}
+#info-title{font-size:1.05rem;font-weight:700;color:#22d3ee;margin-bottom:5px}
+#info-body{font-size:.88rem;color:#cbd5e1;line-height:1.6}
+#chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{background:#164e63;border-radius:20px;padding:4px 13px;font-size:.76rem;color:#67e8f9;border:1px solid #0e7490}
+#controls{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.btn{padding:9px 20px;border:none;border-radius:24px;font-weight:700;cursor:pointer;font-size:.88rem;transition:.2s}
+.btn-cyan{background:linear-gradient(90deg,#0891b2,#06b6d4);color:#fff}.btn-cyan:hover{filter:brightness(1.15)}
+.btn-blue{background:linear-gradient(90deg,#1d4ed8,#3b82f6);color:#fff}.btn-blue:hover{filter:brightness(1.15)}
+.btn-gray{background:#334155;color:#94a3b8}.btn-gray:hover{background:#475569}
+#toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#22d3ee;color:#0a0a1a;padding:9px 26px;border-radius:24px;font-weight:700;font-size:.95rem;display:none;z-index:1000;box-shadow:0 4px 20px #0008}
+</style>
+</head>
+<body>
+<button id="lang-btn" onclick="toggleLang()">ภาษาไทย</button>
+<div id="toast"></div>
+<div id="header">
+  <h1 id="h-title">Water Treatment Adventure</h1>
+  <p id="h-sub">Click each stage to learn how factory water is treated!</p>
+</div>
+<div id="mode-tabs">
+  <button class="mtab active" onclick="setSystem('waste',this)" id="tab-waste">💧 Wastewater Treatment</button>
+  <button class="mtab" onclick="setSystem('ro',this)" id="tab-ro">🔬 Pure Water (RO System)</button>
+</div>
+<div id="score-bar">
+  <div class="stat"><span id="lbl-cleaned">Particles Cleaned:</span> <span class="stat-val" id="stat-cleaned">0</span></div>
+  <div class="stat"><span id="lbl-eff">Efficiency:</span> <span class="stat-val" id="stat-eff">0%</span></div>
+  <div class="stat"><span id="lbl-stage">Active Stage:</span> <span class="stat-val" id="stat-stage">—</span></div>
+</div>
+<div id="main">
+  <div id="purify-bar-wrap"><div id="purify-bar">0%</div></div>
+  <canvas id="c" width="1100" height="400"></canvas>
+  <div id="info-panel">
+    <div id="info-title">Welcome!</div>
+    <div id="info-body">Click on any stage to learn how it works. Watch the dirty water particles flow through and get cleaned at each step.</div>
+    <div id="chips"></div>
+  </div>
+  <div id="controls">
+    <button class="btn btn-cyan" onclick="addBurst()" id="btn-burst">💧 Release Water Burst</button>
+    <button class="btn btn-gray" onclick="togglePause()" id="btn-pause">⏸ Pause</button>
+    <button class="btn btn-blue" onclick="resetGame()" id="btn-reset">↺ Reset</button>
+  </div>
+</div>
+<script>
+// ─── Language ──────────────────────────────────────────────────────────────────
+const D={
+  en:{
+    title:"Water Treatment Adventure",sub:"Click each stage to learn how factory water is treated!",
+    cleaned:"Particles Cleaned:",eff:"Efficiency:",activeStage:"Active Stage:",
+    welcome:"Welcome to the Water Treatment System!",
+    welcomeBody:"Click any stage to learn how it works. Two systems keep the factory running: Wastewater Treatment cleans spray booth water, and the RO System makes ultra-pure water for production.",
+    tabWaste:"💧 Wastewater Treatment",tabRO:"🔬 Pure Water (RO System)",
+    btnBurst:"💧 Release Water Burst",btnPause:"⏸ Pause",btnResume:"▶ Resume",btnReset:"↺ Reset",
+    toastBurst:"Water burst released! Watch the particles flow →",
+    waste:[
+      {name:"Spray Booths",body:"Water curtain cabinets capture paint mist using a flowing water curtain. The dirty water (containing paint pigments and solvents) collects at the bottom and flows to the recirculation pool.",chips:["Paint mist capture","Water curtain","4 cabinets total"]},
+      {name:"Recirculation Pool",body:"Large collection tank that stores all wastewater from the spray booths. The water is dark and heavily contaminated with paint particles. Capacity: ~10.8 m³.",chips:["10.8 m³ tank","Stores dirty water","Dual pumps"]},
+      {name:"Air Flotation Machine",body:"Tiny micro-bubbles are injected into the water. Paint particles attach to the bubbles and float to the surface as a scum layer. The clarified water sinks and can be re-used.",chips:["Micro-bubble injection","Paint floats up","Clarified water reused","Key separation step"]},
+      {name:"Sludge Pool",body:"The floating paint scum and settled sludge from the air flotation machine is collected here. Reagents A (coagulant) and B (flocculant) are added to help bind small particles together.",chips:["Paint sludge collection","Reagent A: coagulant","Reagent B: flocculant","Chemical treatment"]},
+      {name:"Filter Press",body:"The sludge is pumped into the filter press using a diaphragm pump. High pressure squeezes out the water, leaving behind a dry 'filter cake' of paint sludge. This dry waste is handed to a licensed disposal contractor.",chips:["High-pressure pressing","Removes water from sludge","Filter cake output","Licensed disposal"]},
+      {name:"Clean Water Return",body:"The clarified water from the air flotation process is returned to the recirculation pool and reused in the spray curtain cabinets. This closed-loop design minimizes water consumption and discharge to drain.",chips:["Closed loop","Water reuse","Zero discharge goal","Eco-friendly"]}
+    ],
+    ro:[
+      {name:"Tap Water Input",body:"Municipal tap water enters the system via the raw water pump (Nanfang CHM8-4, 8 m³/h, 1.5 kW). This pump maintains steady flow and pressure throughout the pre-treatment section.",chips:["8 m³/h flow","1.5 kW pump","SUS304 material"]},
+      {name:"Multi-Media Filter",body:"Water passes through layers of quartz sand (two mesh sizes: 6–8 and 10–20 mesh). The sand physically traps suspended solids, turbidity, and large particles. An automatic valve backwashes the filter to clean it.",chips:["Quartz sand layers","Removes turbidity","Auto backwash","FRP tank Φ750mm"]},
+      {name:"Activated Carbon Filter",body:"Fruit-shell activated carbon (10–24 mesh) removes residual chlorine, color, taste, and organic compounds from the water. These would damage the RO membranes if not removed.",chips:["Fruit-shell carbon","Removes chlorine","Removes organics","Protects RO membranes"]},
+      {name:"Antiscalant + Cartridge Filter",body:"Antiscalant chemical is dosed to prevent mineral scale from forming on the RO membranes. The 5-cartridge (40-inch, 5μm PP) security filter removes any remaining fine particles before the high-pressure stage.",chips:["Scale prevention","5μm filtration","SUS304 housing","5 × 40-inch cartridges"]},
+      {name:"1st Stage RO",body:"A high-pressure pump (178 m head, 4 kW) forces water through 3 RO membrane modules (Huitong LP22-8040). The semi-permeable membranes reject ~95% of dissolved salts and minerals. Concentrate (reject water) is discharged; permeate continues.",chips:["178m head pump","3 membrane modules","~95% salt rejection","Huitong LP22-8040"]},
+      {name:"2nd Stage RO",body:"The permeate from Stage 1 passes through a second high-pressure pump and 2 more RO membrane modules. This double-pass process achieves ultra-high purity. Conductivity is monitored by a KEDA CCT-3320V meter.",chips:["Second pass","2 membrane modules","Ultra-high purity","Conductivity monitored"]},
+      {name:"Pure Water Output",body:"The finished product: ultra-pure water at 2 tonnes/hour (2 T/H). This is used throughout the factory where tap water mineral content would cause quality issues — such as in spray painting and ceramic processes.",chips:["2 T/H output","Ultra-pure","PLC auto-control","Quality assured"]}
+    ]
+  },
+  th:{
+    title:"การผจญภัยระบบบำบัดน้ำ",sub:"คลิกที่แต่ละขั้นตอนเพื่อเรียนรู้วิธีบำบัดน้ำในโรงงาน!",
+    cleaned:"อนุภาคที่บำบัดแล้ว:",eff:"ประสิทธิภาพ:",activeStage:"ขั้นตอนที่ใช้งาน:",
+    welcome:"ยินดีต้อนรับสู่ระบบบำบัดน้ำ!",
+    welcomeBody:"คลิกที่แต่ละขั้นตอนเพื่อเรียนรู้วิธีการทำงาน มีสองระบบหลัก: ระบบบำบัดน้ำเสียทำความสะอาดน้ำจากบูธพ่นสี และระบบ RO ผลิตน้ำบริสุทธิ์สำหรับการผลิต",
+    tabWaste:"💧 ระบบบำบัดน้ำเสีย",tabRO:"🔬 น้ำบริสุทธิ์ (ระบบ RO)",
+    btnBurst:"💧 ปล่อยน้ำ",btnPause:"⏸ หยุดชั่วคราว",btnResume:"▶ เล่นต่อ",btnReset:"↺ รีเซ็ต",
+    toastBurst:"ปล่อยน้ำแล้ว! ดูอนุภาคไหล →",
+    waste:[
+      {name:"บูธพ่นสี",body:"ตู้ม่านน้ำดักจับละอองสีโดยใช้ม่านน้ำที่ไหลต่อเนื่อง น้ำสกปรก (ที่มีสารสีและตัวทำละลาย) รวบรวมที่ก้นตู้แล้วไหลไปยังบ่อรีไซเคิล",chips:["ดักจับละอองสี","ม่านน้ำ","4 ตู้รวม"]},
+      {name:"บ่อรีไซเคิล",body:"ถังเก็บขนาดใหญ่ที่เก็บน้ำเสียทั้งหมดจากบูธพ่นสี น้ำมีสีเข้มและปนเปื้อนสีอย่างหนัก ความจุ: ~10.8 ลูกบาศก์เมตร",chips:["ถัง 10.8 ม³","เก็บน้ำสกปรก","ปั๊มคู่"]},
+      {name:"เครื่องลอยอากาศ",body:"ฟองอากาศขนาดเล็กมากถูกอัดเข้าไปในน้ำ อนุภาคสีเกาะติดกับฟองและลอยขึ้นสู่ผิวเป็นชั้นตะกอน น้ำใสจมลงและนำกลับมาใช้ใหม่",chips:["ฟองอากาศขนาดจิ๋ว","สีลอยขึ้น","นำน้ำใสกลับใช้","ขั้นตอนแยกสำคัญ"]},
+      {name:"บ่อตะกอน",body:"ตะกอนสีที่ลอยและตกตะกอนจากเครื่องลอยอากาศถูกเก็บที่นี่ เพิ่มสารเคมี A (สารตกตะกอน) และ B (สารช่วยรวมตะกอน) เพื่อรวมอนุภาคเล็กๆ",chips:["เก็บตะกอนสี","สาร A: ตกตะกอน","สาร B: รวมตะกอน","การบำบัดเคมี"]},
+      {name:"เครื่องกรองแผ่น",body:"ตะกอนถูกสูบเข้าเครื่องกรองด้วยปั๊มไดอะแฟรม แรงดันสูงบีบน้ำออก เหลือ 'เค้กกรอง' แห้งของตะกอนสี ของเสียแห้งนี้ส่งให้ผู้รับกำจัดที่มีใบอนุญาต",chips:["การกดแรงดันสูง","กำจัดน้ำจากตะกอน","ผลผลิตเค้กกรอง","กำจัดอย่างถูกกฎหมาย"]},
+      {name:"น้ำสะอาดกลับ",body:"น้ำใสจากเครื่องลอยอากาศถูกส่งกลับสู่บ่อรีไซเคิลและนำมาใช้ซ้ำในตู้ม่านน้ำ การออกแบบวงจรปิดนี้ลดการใช้น้ำและการปล่อยน้ำทิ้ง",chips:["วงจรปิด","นำน้ำกลับใช้","เป้าหมายศูนย์การปล่อย","รักษ์สิ่งแวดล้อม"]}
+    ],
+    ro:[
+      {name:"น้ำประปาเข้า",body:"น้ำประปาเข้าสู่ระบบผ่านปั๊มน้ำดิบ (Nanfang CHM8-4, 8 ม³/ชม., 1.5 กิโลวัตต์) ปั๊มนี้รักษาการไหลและแรงดันที่สม่ำเสมอตลอดส่วนพรีทรีตเมนต์",chips:["ไหล 8 ม³/ชม.","ปั๊ม 1.5 kW","วัสดุ SUS304"]},
+      {name:"ตัวกรองหลายชั้น",body:"น้ำผ่านชั้นทรายควอตซ์ (สองขนาดตาข่าย: 6-8 และ 10-20 เมช) ทรายดักจับของแข็งแขวนลอย ความขุ่น และอนุภาคขนาดใหญ่ วาล์วอัตโนมัติล้างย้อนตัวกรองเพื่อทำความสะอาด",chips:["ชั้นทรายควอตซ์","กำจัดความขุ่น","ล้างย้อนอัตโนมัติ","ถัง FRP Φ750mm"]},
+      {name:"ตัวกรองถ่านกัมมันต์",body:"ถ่านกัมมันต์เปลือกผลไม้ (10-24 เมช) กำจัดคลอรีนตกค้าง สี รสชาติ และสารอินทรีย์จากน้ำ สิ่งเหล่านี้จะทำลายเมมเบรน RO หากไม่ถูกกำจัด",chips:["ถ่านเปลือกผลไม้","กำจัดคลอรีน","กำจัดสารอินทรีย์","ปกป้องเมมเบรน RO"]},
+      {name:"ดูดซับสเกล + ตัวกรองคาร์ทริดจ์",body:"เคมีป้องกันสเกลถูกเติมเพื่อป้องกันการสะสมแร่บนเมมเบรน RO ตัวกรองความปลอดภัย 5 คาร์ทริดจ์ (40 นิ้ว, 5μm PP) กำจัดอนุภาคเล็กๆ ที่เหลืออยู่",chips:["ป้องกันสเกล","กรอง 5μm","ตัวเรือน SUS304","5 × 40 นิ้ว"]},
+      {name:"RO ขั้นที่ 1",body:"ปั๊มแรงดันสูง (หัว 178 ม., 4 กิโลวัตต์) บังคับน้ำผ่านโมดูลเมมเบรน RO 3 ชุด เมมเบรนกึ่งซึมผ่านได้ปฏิเสธเกลือและแร่ที่ละลาย ~95% น้ำเข้มข้น (ปฏิเสธ) ถูกปล่อยออก; น้ำที่ผ่านดำเนินต่อ",chips:["ปั๊มหัว 178m","3 โมดูลเมมเบรน","~95% ปฏิเสธเกลือ","Huitong LP22-8040"]},
+      {name:"RO ขั้นที่ 2",body:"น้ำที่ผ่านจากขั้นที่ 1 ผ่านปั๊มแรงดันสูงตัวที่สองและโมดูลเมมเบรน RO อีก 2 ชุด กระบวนการสองรอบนี้บรรลุความบริสุทธิ์สูงมาก การนำไฟฟ้าถูกตรวจสอบโดยเครื่องวัด KEDA CCT-3320V",chips:["รอบที่สอง","2 โมดูลเมมเบรน","ความบริสุทธิ์สูงมาก","ตรวจสอบการนำไฟฟ้า"]},
+      {name:"ผลผลิตน้ำบริสุทธิ์",body:"ผลิตภัณฑ์สำเร็จรูป: น้ำบริสุทธิ์สูงที่ 2 ตัน/ชั่วโมง (2 T/H) ใช้ทั่วโรงงานที่ปริมาณแร่ในน้ำประปาจะก่อให้เกิดปัญหาคุณภาพ",chips:["ผลผลิต 2 T/H","ความบริสุทธิ์สูง","ควบคุม PLC อัตโนมัติ","รับประกันคุณภาพ"]}
+    ]
+  }
+};
+
+let lang='en', system='waste', paused=false, activeStageIdx=null;
+let cleaned=0, total=0;
+let particles=[], pidSeq=0;
+
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const W=1100,H=400;
+
+// Stage definitions per system
+const SYSTEMS={
+  waste:{
+    stages:[
+      {x:20, y:50,w:145,h:300,color:'#7c3aed',glow:'#a855f7'},
+      {x:193,y:50,w:145,h:300,color:'#0369a1',glow:'#38bdf8'},
+      {x:366,y:50,w:165,h:300,color:'#0e7490',glow:'#22d3ee'},
+      {x:559,y:50,w:145,h:300,color:'#854d0e',glow:'#f59e0b'},
+      {x:732,y:50,w:145,h:300,color:'#166534',glow:'#4ade80'},
+      {x:905,y:50,w:175,h:300,color:'#1e40af',glow:'#60a5fa'},
+    ],
+    particleColors:['dirty','dirty','float','sludge','cake','clean'],
+    cleanAt:[2,5]
+  },
+  ro:{
+    stages:[
+      {x:10, y:50,w:130,h:300,color:'#0369a1',glow:'#38bdf8'},
+      {x:165,y:50,w:140,h:300,color:'#0e7490',glow:'#22d3ee'},
+      {x:330,y:50,w:140,h:300,color:'#166534',glow:'#4ade80'},
+      {x:495,y:50,w:150,h:300,color:'#713f12',glow:'#fbbf24'},
+      {x:670,y:50,w:145,h:300,color:'#1e3a8a',glow:'#818cf8'},
+      {x:840,y:50,w:145,h:300,color:'#312e81',glow:'#a5b4fc'},
+      {x:1005,y:50,w:85, h:300,color:'#065f46',glow:'#6ee7b7'},
+    ],
+    particleColors:['dirty','semi','semi','semi','semi-clean','clean','pure'],
+    cleanAt:[4,5,6]
+  }
+};
+
+function particleColor(state,alpha){
+  const a=alpha||1;
+  switch(state){
+    case 'dirty':return`rgba(180,120,60,${a})`;
+    case 'semi':return`rgba(96,165,250,${a})`;
+    case 'semi-clean':return`rgba(34,211,238,${a})`;
+    case 'clean':return`rgba(125,211,252,${a})`;
+    case 'pure':return`rgba(186,230,253,${a})`;
+    case 'float':return`rgba(251,191,36,${a})`;
+    case 'sludge':return`rgba(120,85,40,${a})`;
+    case 'cake':return`rgba(90,60,30,${a})`;
+  }
+  return`rgba(180,120,60,${a})`;
+}
+
+function spawnParticle(){
+  const sys=SYSTEMS[system];
+  particles.push({
+    id:pidSeq++,x:60+Math.random()*50,y:140+Math.random()*120,
+    vx:0.9+Math.random()*0.7,vy:(Math.random()-.5)*.4,
+    r:3.5+Math.random()*3,alpha:1,state:'dirty',
+    trail:[],wobble:Math.random()*Math.PI*2,wobbleSpeed:.05+Math.random()*.04
+  });
+}
+
+function addBurst(){
+  for(let i=0;i<16;i++) spawnParticle();
+  showToast(D[lang].toastBurst);
+}
+
+function updateParticles(){
+  const sys=SYSTEMS[system];
+  const toRemove=[];
+  for(const p of particles){
+    p.wobble+=p.wobbleSpeed;
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length>9) p.trail.shift();
+    p.x+=p.vx; p.y+=Math.sin(p.wobble)*.7+p.vy;
+
+    for(let i=0;i<sys.stages.length;i++){
+      const s=sys.stages[i];
+      if(p.x>s.x+s.w*.4&&p.x<s.x+s.w*.7){
+        if(sys.cleanAt.includes(i)&&p.state!=='clean'&&p.state!=='pure'&&p.state!=='semi-clean'){
+          if(Math.random()<.04){
+            p.state=sys.particleColors[i]||'clean';
+            cleaned++;total++;updateStats();
+          }
+        } else if(Math.random()<.015&&p.state==='dirty'){
+          p.state=sys.particleColors[i]||'semi';
+        }
+      }
+    }
+    if(p.x>W+20||p.y>H+20||p.y<-20||p.alpha<=0) toRemove.push(p);
+    if(p.state==='cake'){p.vy+=.25;p.alpha-=.025;}
+    if(p.state==='pure'||p.state==='clean'){p.alpha-=.008;}
+  }
+  particles=particles.filter(q=>!toRemove.includes(q));
+}
+
+function drawParticles(){
+  for(const p of particles){
+    if(p.trail.length>1){
+      for(let i=1;i<p.trail.length;i++){
+        ctx.strokeStyle=particleColor(p.state,(p.alpha*(i/p.trail.length)*.25));
+        ctx.lineWidth=p.r*.5;
+        ctx.beginPath();ctx.moveTo(p.trail[i-1].x,p.trail[i-1].y);ctx.lineTo(p.trail[i].x,p.trail[i].y);ctx.stroke();
+      }
+    }
+    ctx.save();ctx.shadowColor=particleColor(p.state,1);ctx.shadowBlur=8;
+    ctx.fillStyle=particleColor(p.state,p.alpha);
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawPipe(){
+  const sys=SYSTEMS[system];
+  const stages=sys.stages;
+  const first=stages[0],last=stages[stages.length-1];
+  ctx.save();
+  const g=ctx.createLinearGradient(first.x,0,last.x+last.w,0);
+  if(system==='waste'){g.addColorStop(0,'#7c3aed44');g.addColorStop(.5,'#0e749044');g.addColorStop(1,'#1e40af44');}
+  else{g.addColorStop(0,'#0369a144');g.addColorStop(.5,'#06b6d444');g.addColorStop(1,'#065f4644');}
+  ctx.strokeStyle=g;ctx.lineWidth=26;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(first.x,200);ctx.lineTo(last.x+last.w,200);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=10;ctx.stroke();
+  ctx.restore();
+}
+
+function drawStage(s,idx,highlight){
+  ctx.save();
+  if(highlight){ctx.shadowColor=s.glow;ctx.shadowBlur=28;}
+  const g=ctx.createLinearGradient(s.x,s.y,s.x,s.y+s.h);
+  g.addColorStop(0,s.color+'cc');g.addColorStop(1,s.color+'44');
+  ctx.fillStyle=g;ctx.strokeStyle=highlight?s.glow:s.color+'99';ctx.lineWidth=highlight?2.5:1.5;
+  ctx.beginPath();ctx.roundRect(s.x,s.y,s.w,s.h,10);ctx.fill();ctx.stroke();
+  ctx.restore();
+
+  // internals
+  ctx.save();ctx.beginPath();ctx.roundRect(s.x,s.y,s.w,s.h,10);ctx.clip();
+  const stages=SYSTEMS[system].stages;
+  if(system==='waste'){
+    if(idx===0){// water curtain cascade
+      for(let i=0;i<5;i++){const cx2=s.x+18+i*22,cy2=s.y+70+Math.sin(Date.now()/300+i)*.15*10;ctx.fillStyle='rgba(56,189,248,.25)';ctx.fillRect(cx2,cy2,6,180);}
+    }else if(idx===1){// pool waves
+      for(let w2=0;w2<3;w2++){const wy=s.y+120+w2*40;ctx.strokeStyle=`rgba(56,189,248,${.2+w2*.08})`;ctx.lineWidth=2;ctx.beginPath();for(let x2=s.x+5;x2<s.x+s.w-5;x2+=3){ctx.lineTo(x2,wy+Math.sin((x2+Date.now()/200)*0.15)*6);}ctx.stroke();}
+    }else if(idx===2){// bubbles
+      for(let b=0;b<8;b++){const bx=s.x+15+b*18,by=s.y+80+(Date.now()/500+b*0.7)%1*180;ctx.fillStyle=`rgba(34,211,238,.35)`;ctx.beginPath();ctx.arc(bx,by,5+b%3*2,0,Math.PI*2);ctx.fill();}
+    }else if(idx===3){// dots
+      for(let r2=0;r2<4;r2++)for(let c=0;c<3;c++){ctx.fillStyle='rgba(245,158,11,.25)';ctx.beginPath();ctx.arc(s.x+22+c*35,s.y+80+r2*45,8,0,Math.PI*2);ctx.fill();}
+    }else if(idx===4){// filter bars
+      for(let b=0;b<6;b++){ctx.fillStyle='rgba(74,222,128,.2)';ctx.fillRect(s.x+10,s.y+65+b*33,s.w-20,16);}
+    }else if(idx===5){// clean water ripple
+      ctx.strokeStyle='rgba(96,165,250,.3)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x+s.w/2,s.y+s.h/2,30+Math.sin(Date.now()/400)*10,0,Math.PI*2);ctx.stroke();
+    }
+  } else {
+    if(idx===0){// pump circle
+      const an=Date.now()/600;for(let b=0;b<4;b++){ctx.save();ctx.translate(s.x+s.w/2,s.y+s.h/2);ctx.rotate(an+b*Math.PI/2);ctx.fillStyle='rgba(56,189,248,.3)';ctx.fillRect(-5,-30,10,30);ctx.restore();}
+    }else if(idx===1||idx===2){// filter layers
+      for(let b=0;b<6;b++){ctx.fillStyle=idx===1?'rgba(56,189,248,.2)':'rgba(74,222,128,.2)';ctx.fillRect(s.x+10,s.y+65+b*33,s.w-20,15);}
+    }else if(idx===3){// dosing drips
+      for(let d=0;d<3;d++){const dy=(Date.now()/300+d*2)%1;ctx.fillStyle='rgba(251,191,36,.6)';ctx.beginPath();ctx.arc(s.x+30+d*30,s.y+80+dy*160,4,0,Math.PI*2);ctx.fill();}
+    }else if(idx===4||idx===5){// membrane lines
+      for(let m=0;m<8;m++){ctx.strokeStyle=`rgba(129,140,248,${.2+m*.03})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(s.x+10,s.y+55+m*28);ctx.lineTo(s.x+s.w-10,s.y+55+m*28);ctx.stroke();}
+    }else if(idx===6){// pure water glow
+      const pulse=Math.sin(Date.now()/500)*.3+.5;ctx.fillStyle=`rgba(110,231,183,${pulse*.3})`;ctx.beginPath();ctx.arc(s.x+s.w/2,s.y+s.h/2,40,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.restore();
+
+  // number + label
+  ctx.save();
+  ctx.beginPath();ctx.arc(s.x+s.w/2,s.y+22,13,0,Math.PI*2);ctx.fillStyle=s.glow;ctx.fill();
+  ctx.fillStyle='#000';ctx.font='bold 12px Segoe UI';ctx.textAlign='center';ctx.fillText(idx+1,s.x+s.w/2,s.y+27);
+  const name=D[lang][system][idx].name;
+  const words=name.split(' ');let lineY=s.y+48,line='';
+  ctx.fillStyle='#f1f5f9';ctx.font='bold 10px Segoe UI';
+  for(const w of words){
+    const test=line+w+' ';
+    if(ctx.measureText(test).width>s.w-10&&line!==''){ctx.fillText(line.trim(),s.x+s.w/2,lineY);line=w+' ';lineY+=14;}else line=test;
+  }
+  ctx.fillText(line.trim(),s.x+s.w/2,lineY);
+  ctx.restore();
+}
+
+function drawArrow(){
+  const sys=SYSTEMS[system];const last=sys.stages[sys.stages.length-1];
+  ctx.save();ctx.fillStyle='rgba(148,163,184,.5)';ctx.font='18px serif';
+  ctx.fillText('→',last.x+last.w+4,206);ctx.restore();
+}
+
+function drawLegend(){
+  const items=system==='waste'
+    ?[{c:'rgba(180,120,60,1)',l:lang==='en'?'Dirty Water':'น้ำสกปรก'},{c:'rgba(251,191,36,1)',l:lang==='en'?'Floating Sludge':'ตะกอนลอย'},{c:'rgba(74,222,128,1)',l:lang==='en'?'Filter Cake':'เค้กกรอง'},{c:'rgba(125,211,252,1)',l:lang==='en'?'Clean Water':'น้ำสะอาด'}]
+    :[{c:'rgba(180,120,60,1)',l:lang==='en'?'Tap Water':'น้ำประปา'},{c:'rgba(96,165,250,1)',l:lang==='en'?'Filtered':'กรองแล้ว'},{c:'rgba(34,211,238,1)',l:lang==='en'?'Purified':'บำบัดแล้ว'},{c:'rgba(186,230,253,1)',l:lang==='en'?'Pure Water':'น้ำบริสุทธิ์'}];
+  ctx.save();ctx.font='11px Segoe UI';let lx=24;
+  for(const it of items){
+    ctx.fillStyle=it.c;ctx.beginPath();ctx.arc(lx,385,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#94a3b8';ctx.fillText(it.l,lx+9,389);lx+=ctx.measureText(it.l).width+28;
+  }
+  ctx.restore();
+}
+
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(W/rect.width);
+  const my=(e.clientY-rect.top)*(H/rect.height);
+  const stages=SYSTEMS[system].stages;
+  for(let i=0;i<stages.length;i++){
+    const s=stages[i];
+    if(mx>=s.x&&mx<=s.x+s.w&&my>=s.y&&my<=s.y+s.h){
+      activeStageIdx=i;showStageInfo(i);
+      for(let k=0;k<5;k++) spawnParticle();
+      return;
+    }
+  }
+});
+
+function showStageInfo(i){
+  const sd=D[lang][system][i];
+  document.getElementById('info-title').textContent=sd.name;
+  document.getElementById('info-body').textContent=sd.body;
+  document.getElementById('chips').innerHTML=sd.chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('stat-stage').textContent=sd.name;
+}
+
+function setSystem(s,btn){
+  system=s;particles=[];activeStageIdx=null;cleaned=0;total=0;updateStats();
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('info-title').textContent=D[lang].welcome;
+  document.getElementById('info-body').textContent=D[lang].welcomeBody;
+  document.getElementById('chips').innerHTML='';
+  document.getElementById('stat-stage').textContent='—';
+  for(let i=0;i<12;i++) spawnParticle();
+}
+
+function updateStats(){
+  document.getElementById('stat-cleaned').textContent=cleaned;
+  const e=total>0?Math.round(cleaned/total*100):0;
+  document.getElementById('stat-eff').textContent=e+'%';
+  const b=document.getElementById('purify-bar');b.style.width=e+'%';b.textContent=e+'%';
+}
+
+function togglePause(){paused=!paused;document.getElementById('btn-pause').textContent=paused?D[lang].btnResume:D[lang].btnPause;}
+function resetGame(){particles=[];cleaned=0;total=0;activeStageIdx=null;updateStats();document.getElementById('stat-stage').textContent='—';}
+
+let toastT;
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2600);}
+
+function toggleLang(){
+  lang=lang==='en'?'th':'en';
+  document.getElementById('lang-btn').textContent=lang==='en'?'ภาษาไทย':'English';
+  document.getElementById('h-title').textContent=D[lang].title;
+  document.getElementById('h-sub').textContent=D[lang].sub;
+  document.getElementById('lbl-cleaned').textContent=D[lang].cleaned;
+  document.getElementById('lbl-eff').textContent=D[lang].eff;
+  document.getElementById('lbl-stage').textContent=D[lang].activeStage;
+  document.getElementById('tab-waste').textContent=D[lang].tabWaste;
+  document.getElementById('tab-ro').textContent=D[lang].tabRO;
+  document.getElementById('btn-burst').textContent=D[lang].btnBurst;
+  document.getElementById('btn-pause').textContent=paused?D[lang].btnResume:D[lang].btnPause;
+  document.getElementById('btn-reset').textContent=D[lang].btnReset;
+  if(activeStageIdx!==null) showStageInfo(activeStageIdx);
+  else{document.getElementById('info-title').textContent=D[lang].welcome;document.getElementById('info-body').textContent=D[lang].welcomeBody;document.getElementById('chips').innerHTML='';}
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0f172a');bg.addColorStop(1,'#020617');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  drawPipe();
+  const stages=SYSTEMS[system].stages;
+  for(let i=0;i<stages.length;i++) drawStage(stages[i],i,activeStageIdx===i);
+  drawArrow();drawParticles();drawLegend();
+  if(!paused){updateParticles();if(Math.random()<.025) spawnParticle();}
+  requestAnimationFrame(draw);
+}
+
+setTimeout(()=>{for(let i=0;i<12;i++) spawnParticle();},400);
+draw();
+</script>
+</body>
+</html>

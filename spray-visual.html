@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spray Painting Line — Visual Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fdfaf5;font-family:'Segoe UI','Noto Sans Thai',sans-serif;color:#1a1a2e}
+#lang-btn{position:fixed;top:14px;right:14px;z-index:99;background:#d97706;border:none;color:#fff;padding:7px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700}
+.header{background:linear-gradient(135deg,#92400e,#b45309);color:#fff;padding:22px 24px 16px;text-align:center}
+.header h1{font-size:1.7rem;font-weight:900;margin-bottom:4px}
+.header p{font-size:.9rem;opacity:.85}
+.container{max-width:960px;margin:0 auto;padding:18px 14px}
+.intro-box{background:#fff;border-radius:12px;padding:16px;margin-bottom:18px;border-left:5px solid #d97706;box-shadow:0 2px 8px #0002}
+.intro-box h3{color:#92400e;font-size:1rem;font-weight:700;margin-bottom:6px}
+.intro-box p{font-size:.88rem;color:#374151;line-height:1.7}
+/* flow path banner */
+.path-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1px solid #fcd34d}
+.path-banner h4{font-size:.82rem;font-weight:700;color:#92400e;margin-bottom:7px}
+.path-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:.78rem}
+.path-step{background:#d97706;color:#fff;padding:4px 10px;border-radius:16px;font-weight:600}
+.path-arrow{color:#b45309;font-size:1rem}
+/* station cards */
+.stations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:18px}
+.station-card{background:#fff;border-radius:14px;border:2px solid #fde68a;box-shadow:0 2px 10px #0001;cursor:pointer;transition:.2s;overflow:hidden}
+.station-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(217,119,6,.2);border-color:#f59e0b}
+.station-card.active{border-color:#d97706;box-shadow:0 4px 20px rgba(217,119,6,.3)}
+.card-header{padding:14px 16px 10px;display:flex;align-items:center;gap:12px}
+.card-num{background:#d97706;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0}
+.card-icon{font-size:1.6rem}
+.card-title{font-size:.92rem;font-weight:700;color:#1a1a2e;line-height:1.3}
+.card-preview{font-size:.78rem;color:#6b7280;padding:0 16px 10px;line-height:1.5}
+.card-chips{display:flex;flex-wrap:wrap;gap:5px;padding:0 16px 12px}
+.chip{background:#fef3c7;color:#92400e;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:600;border:1px solid #fde68a}
+.chip.red{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.chip.green{background:#dcfce7;color:#15803d;border-color:#86efac}
+.chip.blue{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+/* detail panel */
+.detail-panel{background:#fff;border-radius:14px;padding:20px;border:2px solid #d97706;box-shadow:0 4px 16px rgba(217,119,6,.15);margin-bottom:16px;display:none}
+.detail-panel.visible{display:block}
+.detail-panel h2{color:#92400e;font-size:1.15rem;font-weight:800;margin-bottom:10px}
+.detail-panel p{font-size:.88rem;color:#374151;line-height:1.7;margin-bottom:10px}
+.specs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;margin-top:10px}
+.spec-item{background:#fef9ee;border-radius:8px;padding:9px 12px;border:1px solid #fde68a}
+.spec-label{font-size:.7rem;color:#92400e;font-weight:600;margin-bottom:2px}
+.spec-val{font-size:.85rem;color:#1a1a2e;font-weight:700}
+/* maintenance table */
+.maint-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px}
+.maint-table th{background:#fef3c7;color:#92400e;padding:8px 10px;text-align:left;font-weight:700;border-bottom:2px solid #fde68a}
+.maint-table td{padding:7px 10px;border-bottom:1px solid #fef3c7;color:#374151}
+.maint-table tr:last-child td{border-bottom:none}
+/* problems table */
+.prob-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px}
+.prob-table th{background:#fee2e2;color:#b91c1c;padding:8px 10px;text-align:left;font-weight:700;border-bottom:2px solid #fca5a5}
+.prob-table td{padding:7px 10px;border-bottom:1px solid #fef2f2;color:#374151}
+.prob-table tr:last-child td{border-bottom:none}
+h4.sec-title{font-size:.88rem;font-weight:700;color:#92400e;margin:14px 0 8px;border-bottom:2px solid #fde68a;padding-bottom:4px}
+.safety-box{background:#fef2f2;border-radius:10px;padding:12px 16px;border:1px solid #fca5a5;margin-bottom:12px}
+.safety-box h4{color:#b91c1c;font-size:.88rem;font-weight:700;margin-bottom:6px}
+.safety-box li{font-size:.82rem;color:#374151;line-height:1.8;list-style:disc;margin-left:16px}
+</style>
+</head>
+<body>
+<button id="lang-btn" onclick="toggleLang()">ภาษาไทย</button>
+<div class="header">
+  <h1 id="h-title">☕ Spray Painting Line — Visual Guide</h1>
+  <p id="h-sub">Thermos Cup Flat-Plate Spray Painting Production Line (Documents 13 & 14)</p>
+</div>
+<div class="container">
+
+  <div class="intro-box">
+    <h3 id="intro-title">What is the Spray Painting Production Line?</h3>
+    <p id="intro-body">The thermos cup flat-plate spray painting line is a fully automated production line for spray-painting stainless steel thermos cups and other cylindrical metal products. Cups move along a conveyor belt through 6 sequential stations — from dust removal to final cooling — each with specific equipment and process parameters. The line can handle cups from Ø50mm to Ø120mm in diameter.</p>
+  </div>
+
+  <div class="path-banner">
+    <h4 id="path-title">Production Flow:</h4>
+    <div class="path-row">
+      <span class="path-step">💨 Air Gun Dust Removal</span><span class="path-arrow">→</span>
+      <span class="path-step">🙌 Manual Loading</span><span class="path-arrow">→</span>
+      <span class="path-step">🌡️ Hot Air Pre-Heat</span><span class="path-arrow">→</span>
+      <span class="path-step">🎨 Reciprocating Spray</span><span class="path-arrow">→</span>
+      <span class="path-step">🔥 Hot Air Curing</span><span class="path-arrow">→</span>
+      <span class="path-step">❄️ Cooling & Unloading</span>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detail-panel">
+    <h2 id="dp-title"></h2>
+    <p id="dp-body"></p>
+    <div class="specs-grid" id="dp-specs"></div>
+  </div>
+
+  <div class="stations-grid" id="stations-grid"></div>
+
+  <h4 class="sec-title" id="maint-title">🔧 Maintenance Schedule</h4>
+  <table class="maint-table" id="maint-table">
+    <thead><tr><th id="m-th1">Component</th><th id="m-th2">Task</th><th id="m-th3">Frequency</th></tr></thead>
+    <tbody id="maint-body"></tbody>
+  </table>
+
+  <h4 class="sec-title" id="prob-title">⚠️ Common Problems & Solutions</h4>
+  <table class="prob-table" id="prob-table">
+    <thead><tr><th id="p-th1">Problem</th><th id="p-th2">Cause</th><th id="p-th3">Solution</th></tr></thead>
+    <tbody id="prob-body"></tbody>
+  </table>
+
+  <h4 class="sec-title" id="safety-title">🔴 Safety Warnings</h4>
+  <div class="safety-box">
+    <h4 id="safety-subtitle">Important Safety Rules</h4>
+    <ul id="safety-list"></ul>
+  </div>
+
+</div>
+<script>
+const D={
+  en:{
+    title:"☕ Spray Painting Line — Visual Guide",
+    sub:"Thermos Cup Flat-Plate Spray Painting Production Line (Documents 13 & 14)",
+    introTitle:"What is the Spray Painting Production Line?",
+    introBody:"The thermos cup flat-plate spray painting line is a fully automated production line for spray-painting stainless steel thermos cups and other cylindrical metal products. Cups move along a conveyor belt through 6 sequential stations — from dust removal to final cooling — each with specific equipment and process parameters. The line can handle cups from Ø50mm to Ø120mm in diameter.",
+    pathTitle:"Production Flow:",
+    maintTitle:"🔧 Maintenance Schedule",
+    mTh:["Component","Task","Frequency"],
+    probTitle:"⚠️ Common Problems & Solutions",
+    pTh:["Problem","Cause","Solution"],
+    safetyTitle:"🔴 Safety Warnings",
+    safetySubtitle:"Important Safety Rules",
+    maint:[
+      ["Air gun nozzle","Clear blockages, check for wear","Daily"],
+      ["Reciprocating machine rail","Apply grease, remove paint residue","Weekly"],
+      ["Hot air oven filter","Replace high-efficiency filter (when differential pressure >200 Pa)","Monthly"],
+      ["Spray gun piping","Flush with solvent to prevent cured blockages","End of each shift"],
+    ],
+    probs:[
+      ["Paint film has bubbles","Paint contains moisture OR air pressure too high","Replace paint; reduce air pressure to 0.4 MPa"],
+      ["Uneven coating on cup","Reciprocating machine speed not synchronised with spray gun","Recalibrate servo motor parameters"],
+      ["Paint still tacky after curing","Temperature insufficient or time too short","Increase temperature to 180°C and extend by 5 minutes"],
+    ],
+    safety:["Spray painting zone: Explosion-proof lighting and ventilation system mandatory; mobile phones prohibited.","Curing oven: High-temperature areas must have safety guards; operators must wear heat-resistant gloves.","Air supply: Regularly inspect air hoses for ageing or cracking.","Paint mixing area: No open flames; fire extinguisher must be accessible at all times."],
+    stations:[
+      {icon:"💨",name:"Air Gun Dust Removal",preview:"High-pressure air blows dust off cup surface before painting.",
+       body:"A high-pressure air gun system with multi-angle nozzles blasts compressed air across every surface of the cup. This removes dust, metal shavings from manufacturing, and fingerprints — all of which would cause paint adhesion problems or visible defects in the finished film. The dust is collected in a dust collection box below the station.",
+       chips:[{t:"0.6–0.8 MPa",c:""},{t:"Multi-angle nozzle",c:""},{t:"≥98% dust removal",c:"green"},{t:"Dust collection box",c:""}],
+       specs:["Air pressure: 0.6–0.8 MPa","Nozzle type: Multi-angle","Dust removal efficiency: ≥98%","Dust collected: Yes (collection box)"]},
+      {icon:"🙌",name:"Manual Loading",preview:"Operator places cups on conveyor belt fixtures, spray-side up.",
+       body:"An operator manually places each thermos cup onto the conveyor belt fixture (卡具) with the spray surface facing upward. The rotating positioning table helps align cups consistently. The fixture can be adjusted to accommodate cups ranging from Ø50mm to Ø120mm in diameter. The conveyor speed is controlled by a Variable Frequency Drive (VFD), allowing belt speed to be adjusted from 0.5 to 2 m/min to match production requirements.",
+       chips:[{t:"Ø50–120mm adjustable",c:""},{t:"VFD belt speed control",c:""},{t:"0.5–2 m/min range",c:""},{t:"Spray face up",c:""},{t:"Rotating positioning table",c:""}],
+       specs:["Fixture diameter: Ø50–120mm (adjustable)","Belt speed: 0.5–2 m/min","Speed control: VFD","Operator: Manual loading"]},
+      {icon:"🌡️",name:"Hot Air Pre-Heat",preview:"Cups heated to 40–60°C to improve paint adhesion.",
+       body:"Before painting, each cup passes through a hot air circulating oven with a stainless steel inner liner. PID temperature control maintains the oven temperature precisely. Pre-heating the cup body to 40–60°C achieves two things: (1) the slight thermal expansion of the metal helps paint 'key' into the surface; (2) any residual moisture is evaporated, preventing bubbles from forming in the paint film. Without pre-heating, paint adhesion is significantly weaker.",
+       chips:[{t:"Target: 40–60°C",c:""},{t:"PID temperature control",c:""},{t:"2–5 minutes",c:""},{t:"Improves adhesion",c:"green"},{t:"Removes moisture",c:"green"},{t:"SS inner liner",c:""}],
+       specs:["Temperature range: Ambient to 100°C","Target temp: 40–60°C","Heating time: 2–5 minutes","Temperature control: PID","Inner liner: Stainless steel"]},
+      {icon:"🎨",name:"Reciprocating Machine Spray",preview:"Servo reciprocating arm automatically sprays 2–3 coats.",
+       body:"This is the core painting station. A servo motor drives a reciprocating machine with a 1.5m stroke — the spray gun moves back and forth automatically across each cup as it passes through on the belt. The nozzle diameter is 1.2–1.5mm. Spray speed is programmable at 0.3–0.6 m/s. Typically 2–3 spray passes are made per cup to build up a uniform film thickness of 15–30 μm with tight ±2 μm tolerance. Paint is supplied by a gear pump with viscosity control (12–18 seconds, measured by DIN-4 cup). The water curtain cabinet (水帘柜) with integral water supply captures overspray paint mist.",
+       chips:[{t:"Servo reciprocating",c:""},{t:"1.5m stroke",c:""},{t:"15–30 μm film",c:""},{t:"±2 μm tolerance",c:""},{t:"2–3 passes",c:""},{t:"Viscosity: 12–18s DIN-4",c:""},{t:"Water curtain capture",c:"blue"}],
+       specs:["Drive: Servo motor","Stroke: 1.5 m","Nozzle diameter: 1.2–1.5 mm","Spray speed: 0.3–0.6 m/s","Film thickness: 15–30 μm","Tolerance: ±2 μm","Passes: 2–3","Paint viscosity: 12–18s (DIN-4 cup)","Paint supply: Gear pump + viscosity controller","Overspray: Water curtain cabinet"]},
+      {icon:"🔥",name:"Hot Air Curing",preview:"Paint cured at 150–180°C for 8–15 minutes — creates permanent bond.",
+       body:"After painting, cups enter a high-temperature hot air tunnel oven equipped with a high-temperature-rated circulation fan. At 150–180°C for 8–15 minutes, the paint film undergoes cross-linking — the polymer chains in the paint bond together and to the metal surface permanently. This curing process transforms the wet paint into a hard, scratch-resistant, chemically-bonded coating. The oven must reach its set temperature (pre-heat for 30 minutes before production) before timing begins. If curing temperature is too low or time too short, the paint will remain tacky.",
+       chips:[{t:"150–180°C",c:"red"},{t:"8–15 minutes",c:""},{t:"Cross-links polymer",c:""},{t:"Permanent bond",c:"green"},{t:"Pre-heat 30 min",c:""},{t:"High-temp fan",c:""}],
+       specs:["Curing temperature: 150–180°C","Curing time: 8–15 minutes","Fan type: High-temperature rated","Pre-heat time: 30 minutes (before production)","Result: Hard, permanent coating"]},
+      {icon:"❄️",name:"Cooling & Unloading",preview:"Fans cool cups to room temp; cups auto-slide to collection basket.",
+       body:"After exiting the curing oven, cups are still very hot (up to 180°C). Cooling fans rapidly bring the temperature down to room temperature. Once cooled, the finished cups automatically slide down a sloped chute into a collection basket. At this point the paint film is fully cured and hardened. The finished cups then go to quality inspection (checking for uniform coating, bubbles, adhesion) and packaging.",
+       chips:[{t:"Cooling fans",c:""},{t:"Auto slide chute",c:""},{t:"Collection basket",c:""},{t:"Room temperature",c:"green"},{t:"Ready for QC",c:"green"}],
+       specs:["Cooling method: Fan cooling","Unloading: Auto sloped chute","Collection: Basket","Output condition: Cooled, film cured","Next step: Quality inspection → Packaging"]},
+    ]
+  },
+  th:{
+    title:"☕ สายการพ่นสี — คู่มือภาพ",
+    sub:"สายการพ่นสีแบนสำหรับแก้วเทอร์มอส (เอกสาร 13 & 14)",
+    introTitle:"สายการผลิตพ่นสีคืออะไร?",
+    introBody:"สายการพ่นสีแบนสำหรับแก้วเทอร์มอสเป็นสายการผลิตอัตโนมัติเต็มรูปแบบสำหรับพ่นสีแก้วเทอร์มอสสแตนเลสและผลิตภัณฑ์โลหะทรงกระบอกอื่นๆ แก้วเดินทางตามสายพานลำเลียงผ่าน 6 สถานีตามลำดับ ตั้งแต่การกำจัดฝุ่นจนถึงการระบายความร้อนขั้นสุดท้าย แต่ละสถานีมีอุปกรณ์และพารามิเตอร์กระบวนการเฉพาะ สายการผลิตรองรับแก้วตั้งแต่ Ø50mm ถึง Ø120mm",
+    pathTitle:"กระบวนการผลิต:",
+    maintTitle:"🔧 ตารางการบำรุงรักษา",
+    mTh:["ชิ้นส่วน","งาน","ความถี่"],
+    probTitle:"⚠️ ปัญหาทั่วไปและวิธีแก้",
+    pTh:["ปัญหา","สาเหตุ","วิธีแก้ไข"],
+    safetyTitle:"🔴 คำเตือนด้านความปลอดภัย",
+    safetySubtitle:"กฎความปลอดภัยที่สำคัญ",
+    maint:[
+      ["หัวฉีดปืนลม","ล้างสิ่งอุดตัน ตรวจสอบการสึกหรอ","ทุกวัน"],
+      ["รางเครื่องซิกแซก","ทาจาระบี กำจัดตะกอนสี","ทุกสัปดาห์"],
+      ["ตัวกรองเตาอบลมร้อน","เปลี่ยนตัวกรองประสิทธิภาพสูง (เมื่อความดันต่าง >200 Pa)","ทุกเดือน"],
+      ["ท่อปืนพ่นสี","ล้างด้วยตัวทำละลายเพื่อป้องกันการอุดตัน","สิ้นสุดแต่ละกะ"],
+    ],
+    probs:[
+      ["ฟิล์มสีมีฟองอากาศ","สีมีความชื้น หรือแรงดันอากาศสูงเกินไป","เปลี่ยนสี; ลดแรงดันอากาศเป็น 0.4 MPa"],
+      ["เคลือบไม่สม่ำเสมอ","ความเร็วเครื่องซิกแซกไม่ประสานกับปืนพ่น","ปรับค่าพารามิเตอร์เซอร์โวใหม่"],
+      ["สียังเหนียวหลังอบ","อุณหภูมิไม่เพียงพอหรือเวลาสั้นเกินไป","เพิ่มอุณหภูมิเป็น 180°C และขยายเวลา 5 นาที"],
+    ],
+    safety:["โซนพ่นสี: ต้องใช้ไฟฟ้าชนิดระเบิดและระบบระบายอากาศ; ห้ามใช้โทรศัพท์มือถือ","เตาอบ: พื้นที่อุณหภูมิสูงต้องมีการ์ดป้องกัน; ผู้ปฏิบัติงานต้องสวมถุงมือทนความร้อน","ระบบอากาศ: ตรวจสอบท่ออากาศเป็นประจำเพื่อหาการเสื่อมสภาพหรือการแตกร้าว","พื้นที่ผสมสี: ห้ามมีเปลวไฟ; ต้องมีถังดับเพลิงตลอดเวลา"],
+    stations:[
+      {icon:"💨",name:"ปืนลมกำจัดฝุ่น",preview:"ลมแรงดันสูงเป่าฝุ่นออกจากผิวแก้วก่อนพ่นสี",
+       body:"ระบบปืนลมแรงดันสูงพร้อมหัวฉีดหลายมุมพ่นอากาศอัดไปยังทุกผิวของแก้ว กำจัดฝุ่น เศษโลหะ และรอยนิ้วมือ ทั้งหมดนี้จะทำให้เกิดปัญหาการยึดเกาะของสีหรือข้อบกพร่องที่มองเห็นได้ในฟิล์มสำเร็จรูป ฝุ่นถูกเก็บในกล่องเก็บฝุ่นด้านล่างสถานี",
+       chips:[{t:"0.6–0.8 MPa",c:""},{t:"หัวฉีดหลายมุม",c:""},{t:"≥98% กำจัดฝุ่น",c:"green"},{t:"กล่องเก็บฝุ่น",c:""}],
+       specs:["แรงดันอากาศ: 0.6–0.8 MPa","ประเภทหัวฉีด: หลายมุม","ประสิทธิภาพกำจัดฝุ่น: ≥98%","เก็บฝุ่น: ใช่ (กล่องเก็บฝุ่น)"]},
+      {icon:"🙌",name:"โหลดด้วยมือ",preview:"ผู้ปฏิบัติงานวางแก้วบนสายพาน หันผิวพ่นขึ้น",
+       body:"ผู้ปฏิบัติงานวางแก้วเทอร์มอสแต่ละใบลงบนอุปกรณ์ยึดสายพานโดยให้ผิวพ่นหันขึ้น โต๊ะวางตำแหน่งหมุนช่วยจัดแนวแก้วอย่างสม่ำเสมอ อุปกรณ์ยึดปรับได้สำหรับแก้วตั้งแต่ Ø50mm ถึง Ø120mm ความเร็วสายพานควบคุมโดย VFD ปรับได้ 0.5 ถึง 2 ม./นาที",
+       chips:[{t:"Ø50–120mm ปรับได้",c:""},{t:"ควบคุม VFD",c:""},{t:"0.5–2 ม./นาที",c:""},{t:"ผิวพ่นหันขึ้น",c:""},{t:"โต๊ะวางตำแหน่งหมุน",c:""}],
+       specs:["เส้นผ่านศูนย์กลาง: Ø50–120mm (ปรับได้)","ความเร็วสายพาน: 0.5–2 ม./นาที","ควบคุมความเร็ว: VFD","การโหลด: ด้วยมือ"]},
+      {icon:"🌡️",name:"อุ่นร้อนล่วงหน้า",preview:"อุ่นแก้วถึง 40–60°C เพื่อปรับปรุงการยึดเกาะของสี",
+       body:"ก่อนพ่นสี แก้วแต่ละใบผ่านเตาอบหมุนเวียนลมร้อนที่มีซับในสแตนเลส การควบคุมอุณหภูมิ PID รักษาอุณหภูมิเตาอบอย่างแม่นยำ การอุ่นแก้วถึง 40-60°C ทำสองสิ่ง: (1) การขยายตัวทางความร้อนของโลหะช่วยให้สียึดเกาะกับผิว; (2) ความชื้นตกค้างถูกระเหย ป้องกันฟองในฟิล์มสี",
+       chips:[{t:"เป้าหมาย 40–60°C",c:""},{t:"ควบคุม PID",c:""},{t:"2–5 นาที",c:""},{t:"ปรับปรุงการยึดเกาะ",c:"green"},{t:"กำจัดความชื้น",c:"green"}],
+       specs:["ช่วงอุณหภูมิ: อุณหภูมิห้อง ถึง 100°C","เป้าหมาย: 40–60°C","เวลา: 2–5 นาที","ควบคุมอุณหภูมิ: PID","ซับใน: สแตนเลส"]},
+      {icon:"🎨",name:"เครื่องพ่นสีซิกแซก",preview:"แขนซิกแซกเซอร์โวพ่นสีอัตโนมัติ 2–3 รอบ",
+       body:"นี่คือสถานีการพ่นสีหลัก เซอร์โวมอเตอร์ขับเครื่องซิกแซกช่วง 1.5 ม. ปืนพ่นสีเคลื่อนไปมาอัตโนมัติเหนือแก้วแต่ละใบขณะผ่านบนสายพาน เส้นผ่านศูนย์กลางหัวฉีด 1.2-1.5 มม. ความเร็วพ่น 0.3-0.6 ม./วิ พ่น 2-3 รอบสร้างความหนาฟิล์ม 15-30 μm (±2 μm) สีถูกจ่ายโดยปั๊มเกียร์พร้อมตัวควบคุมความหนืด",
+       chips:[{t:"ซิกแซกเซอร์โว",c:""},{t:"ช่วง 1.5 ม.",c:""},{t:"ฟิล์ม 15–30 μm",c:""},{t:"±2 μm",c:""},{t:"2–3 รอบ",c:""},{t:"ความหนืด: 12–18s",c:""},{t:"ม่านน้ำดักโอเวอร์สเปรย์",c:"blue"}],
+       specs:["ขับเคลื่อน: เซอร์โวมอเตอร์","ช่วง: 1.5 ม.","หัวฉีด: 1.2–1.5 มม.","ความเร็วพ่น: 0.3–0.6 ม./วิ","ความหนาฟิล์ม: 15–30 μm","ความคลาดเคลื่อน: ±2 μm","จำนวนรอบ: 2–3","ความหนืดสี: 12–18s (DIN-4)"]},
+      {icon:"🔥",name:"อบแห้งด้วยลมร้อน",preview:"อบสีที่ 150–180°C เป็นเวลา 8–15 นาที — ยึดติดถาวร",
+       body:"หลังพ่นสี แก้วเข้าเตาอบอุโมงค์อุณหภูมิสูงพร้อมพัดลมหมุนเวียนอุณหภูมิสูง ที่ 150-180°C เป็นเวลา 8-15 นาที ฟิล์มสีเกิดการเชื่อมขวาง โซ่โพลิเมอร์ในสียึดติดกันและกับผิวโลหะอย่างถาวร เตาอบต้องถึงอุณหภูมิที่ตั้ง (อุ่นล่วงหน้า 30 นาทีก่อนผลิต) ก่อนเริ่มจับเวลา",
+       chips:[{t:"150–180°C",c:"red"},{t:"8–15 นาที",c:""},{t:"เชื่อมขวางโพลิเมอร์",c:""},{t:"ยึดติดถาวร",c:"green"},{t:"อุ่นล่วงหน้า 30 นาที",c:""}],
+       specs:["อุณหภูมิอบ: 150–180°C","เวลาอบ: 8–15 นาที","ประเภทพัดลม: ทนอุณหภูมิสูง","เวลาอุ่นล่วงหน้า: 30 นาที","ผลลัพธ์: เคลือบแข็งถาวร"]},
+      {icon:"❄️",name:"ระบายความร้อนและขนถ่าย",preview:"พัดลมระบายความร้อนแก้ว; แก้วไถลอัตโนมัติสู่ตะกร้า",
+       body:"หลังออกจากเตาอบ แก้วยังร้อนมาก (สูงถึง 180°C) พัดลมระบายความร้อนลดอุณหภูมิอย่างรวดเร็วสู่อุณหภูมิห้อง เมื่อเย็นแล้ว แก้วสำเร็จรูปจะไถลลงรางเอียงสู่ตะกร้าเก็บโดยอัตโนมัติ ฟิล์มสีถูกอบแล้วและแข็งสมบูรณ์ แก้วสำเร็จรูปไปตรวจสอบคุณภาพและบรรจุหีบห่อ",
+       chips:[{t:"พัดลมระบายความร้อน",c:""},{t:"รางไถลอัตโนมัติ",c:""},{t:"ตะกร้าเก็บ",c:""},{t:"อุณหภูมิห้อง",c:"green"},{t:"พร้อม QC",c:"green"}],
+       specs:["วิธีระบายความร้อน: พัดลม","ขนถ่าย: รางเอียงอัตโนมัติ","เก็บ: ตะกร้า","สภาพผลผลิต: เย็น ฟิล์มอบแล้ว","ขั้นตอนถัดไป: ตรวจสอบคุณภาพ → บรรจุหีบห่อ"]},
+    ]
+  }
+};
+
+let lang='en', activeIdx=null;
+
+function buildPage(){
+  const d=D[lang];
+  document.getElementById('h-title').textContent=d.title;
+  document.getElementById('h-sub').textContent=d.sub;
+  document.getElementById('intro-title').textContent=d.introTitle;
+  document.getElementById('intro-body').textContent=d.introBody;
+  document.getElementById('path-title').textContent=d.pathTitle;
+  document.getElementById('maint-title').textContent=d.maintTitle;
+  document.getElementById('m-th1').textContent=d.mTh[0];document.getElementById('m-th2').textContent=d.mTh[1];document.getElementById('m-th3').textContent=d.mTh[2];
+  document.getElementById('maint-body').innerHTML=d.maint.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  document.getElementById('prob-title').textContent=d.probTitle;
+  document.getElementById('p-th1').textContent=d.pTh[0];document.getElementById('p-th2').textContent=d.pTh[1];document.getElementById('p-th3').textContent=d.pTh[2];
+  document.getElementById('prob-body').innerHTML=d.probs.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  document.getElementById('safety-title').textContent=d.safetyTitle;
+  document.getElementById('safety-subtitle').textContent=d.safetySubtitle;
+  document.getElementById('safety-list').innerHTML=d.safety.map(s=>`<li>${s}</li>`).join('');
+
+  // build station cards
+  const grid=document.getElementById('stations-grid');
+  grid.innerHTML=d.stations.map((s,i)=>`
+    <div class="station-card${activeIdx===i?' active':''}" onclick="selectStation(${i})">
+      <div class="card-header">
+        <div class="card-num">${i+1}</div>
+        <div class="card-icon">${s.icon}</div>
+        <div class="card-title">${s.name}</div>
+      </div>
+      <div class="card-preview">${s.preview}</div>
+      <div class="card-chips">${s.chips.map(c=>`<span class="chip ${c.c}">${c.t}</span>`).join('')}</div>
+    </div>`).join('');
+
+  if(activeIdx!==null) showDetail(activeIdx);
+}
+
+function selectStation(i){
+  activeIdx=i;buildPage();showDetail(i);
+  document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function showDetail(i){
+  const s=D[lang].stations[i];
+  const panel=document.getElementById('detail-panel');panel.classList.add('visible');
+  document.getElementById('dp-title').textContent=s.icon+' '+s.name;
+  document.getElementById('dp-body').textContent=s.body;
+  document.getElementById('dp-specs').innerHTML=s.specs.map(sp=>{const[k,...v]=sp.split(':');return`<div class="spec-item"><div class="spec-label">${k}</div><div class="spec-val">${v.join(':').trim()}</div></div>`;}).join('');
+}
+
+function toggleLang(){
+  lang=lang==='en'?'th':'en';
+  document.getElementById('lang-btn').textContent=lang==='en'?'ภาษาไทย':'English';
+  buildPage();
+}
+
+buildPage();
+</script>
+</body>
+</html>
