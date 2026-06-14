@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOC Air Treatment System — Visual Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', 'Noto Sans Thai', sans-serif; background: #f0f4f8; color: #1a1a2e; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+
+/* Top bar */
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.page-title { font-size: 18px; font-weight: 800; color: #1a1a2e; }
+.lang-toggle { display: flex; background: #e2e8f0; border-radius: 24px; padding: 3px; }
+.lang-btn { padding: 5px 16px; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; background: transparent; color: #666; transition: all 0.2s; }
+.lang-btn.active { background: white; color: #1a1a2e; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+
+/* Step nav */
+.step-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.step-btn { padding: 8px 14px; border-radius: 22px; border: 2px solid #ddd; cursor: pointer; font-size: 12px; font-weight: 700; background: white; color: #555; transition: all 0.2s; white-space: nowrap; }
+.step-btn:hover { border-color: #4a90d9; color: #4a90d9; }
+.step-btn.active { color: white; border-color: transparent; }
+
+/* Main layout */
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+@media (max-width: 680px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* Drawing panel */
+.drawing-panel { background: white; border-radius: 14px; padding: 12px; }
+.drawing-panel h3 { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.canvas-wrap { width: 100%; border-radius: 8px; overflow: hidden; background: #fafafa; border: 1px solid #eee; position: relative; min-height: 200px; }
+.canvas-wrap canvas { width: 100% !important; height: auto !important; display: block; }
+.pdf-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; }
+
+/* Zoom controls */
+.zoom-bar { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.zoom-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 13px; font-weight: 700; color: #555; }
+.zoom-btn:hover { background: #f0f4f8; }
+.zoom-label { font-size: 11px; color: #888; margin-left: 4px; }
+
+/* Explanation panel */
+.explain-panel { background: white; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.explain-panel h2 { font-size: 16px; font-weight: 800; color: #1a1a2e; }
+.explain-panel .tagline { font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.explain-panel p { font-size: 13px; color: #444; line-height: 1.75; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border-radius: 20px; padding: 4px 11px; font-size: 11px; font-weight: 700; }
+.chip-blue { background: #e0f0ff; color: #1a55a0; }
+.chip-red { background: #ffe8e8; color: #c0392b; }
+.chip-green { background: #e8ffe8; color: #27ae60; }
+.chip-orange { background: #fff3e0; color: #d35400; }
+.chip-gray { background: #f0f0f0; color: #555; }
+
+/* Annotated diagram strip */
+.strip { background: white; border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+.strip h3 { font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.strip-canvas-wrap { position: relative; width: 100%; }
+.strip-canvas-wrap canvas { width: 100% !important; height: auto !important; display: block; border-radius: 8px; }
+.annotation { position: absolute; background: rgba(26,85,160,0.92); color: white; border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; pointer-events: none; white-space: nowrap; }
+.annotation::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border: 3px solid transparent; border-top-color: rgba(26,85,160,0.92); }
+
+/* Process flow mini-map */
+.flow-map { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; background: #f8fafc; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
+.flow-node { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.18s; text-align: center; border: 2px solid transparent; }
+.flow-node:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
+.flow-node.active-node { border-color: #1a55a0; box-shadow: 0 0 0 3px rgba(26,85,160,0.2); }
+.flow-arrow { color: #aaa; font-size: 16px; }
+
+/* Mode toggle */
+.mode-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.mode-btn { padding: 7px 14px; border-radius: 8px; border: 2px solid #ddd; cursor: pointer; font-size: 12px; font-weight: 700; background: white; color: #555; transition: all 0.2s; }
+.mode-btn.active { background: #1a55a0; border-color: #1a55a0; color: white; }
+
+.info-bar { background: #e8f3ff; border-left: 4px solid #4a90d9; border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12px; color: #333; line-height: 1.6; margin-bottom: 12px; }
+.info-bar strong { color: #1a55a0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="page-title" id="pg-title">💨 VOC Air Treatment System — Engineering Drawings + Explanation</div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧 English</button>
+    <button class="lang-btn" onclick="setLang('th',this)">🇹🇭 ภาษาไทย</button>
+  </div>
+</div>
+
+<!-- PROCESS FLOW MAP (clickable) -->
+<div class="flow-map">
+  <div class="flow-node active-node" style="background:#fff3e0;" onclick="goStage(0)" id="fn0">🎨 <span id="fn0t">Spray Booth</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#e0f7ff;" onclick="goStage(1)" id="fn1">🌀 <span id="fn1t">Stage 1: Cyclone</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#f3f3f3;" onclick="goStage(2)" id="fn2">🧽 <span id="fn2t">Stage 2: Dry Filter</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#fff5e0;" onclick="goStage(3)" id="fn3">🪨 <span id="fn3t">Stage 3: Activated Carbon</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#ffe8e8;" onclick="goStage(4)" id="fn4">🔥 <span id="fn4t">Stage 4: Combustion</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node" style="background:#e8ffe8;" onclick="goStage(5)" id="fn5">✅ <span id="fn5t">Clean Air Out</span></div>
+</div>
+
+<!-- FULL SYSTEM DRAWING STRIP (always visible) -->
+<div class="strip">
+  <h3 id="strip-title">📐 Actual Engineering Drawing — Full VOC System (from factory document)</h3>
+  <div class="strip-canvas-wrap" id="strip-wrap">
+    <canvas id="strip-canvas"></canvas>
+    <div class="pdf-loading" id="strip-loading">Loading engineering drawing…</div>
+    <!-- Annotation overlays (positioned after render) -->
+    <div class="annotation" id="ann0" style="display:none;top:5%;left:2%">🌀 Cyclone Tower</div>
+    <div class="annotation" id="ann1" style="display:none;top:5%;left:22%">🧽 Dry Filter Banks</div>
+    <div class="annotation" id="ann2" style="display:none;top:5%;left:50%">🪨 Activated Carbon Beds</div>
+    <div class="annotation" id="ann3" style="display:none;top:5%;left:72%">🔥 Catalytic Combustion</div>
+    <div class="annotation" id="ann4" style="display:none;top:5%;left:88%">💨 Fan/Exhaust</div>
+  </div>
+</div>
+
+<!-- MAIN DETAIL GRID -->
+<div id="mode-bar-wrap" style="display:none;" class="mode-bar">
+  <button class="mode-btn active" onclick="setMode('adsorb',this)" id="mb-adsorb">⬇️ <span id="mbt1">Adsorption (Normal)</span></button>
+  <button class="mode-btn" onclick="setMode('desorb',this)" id="mb-desorb">🔥 <span id="mbt2">Desorption + Combustion (Cleaning)</span></button>
+</div>
+<div class="info-bar" id="info-bar" style="display:none;"></div>
+
+<div class="main-grid" id="main-grid">
+  <div class="drawing-panel">
+    <h3 id="draw-label">📐 Engineering Drawing — Section View</h3>
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="detail-canvas"></canvas>
+      <div class="pdf-loading" id="detail-loading">Select a stage above to view drawing</div>
+    </div>
+    <div class="zoom-bar">
+      <button class="zoom-btn" onclick="zoomIn()">＋</button>
+      <button class="zoom-btn" onclick="zoomOut()">－</button>
+      <button class="zoom-btn" onclick="zoomReset()">↺</button>
+      <span class="zoom-label" id="zoom-label">100%</span>
+    </div>
+  </div>
+
+  <div class="explain-panel" id="explain-panel">
+    <div class="tagline" id="ep-tag">Select any stage in the flow above</div>
+    <h2 id="ep-title">Click a step to begin</h2>
+    <p id="ep-body">Use the flow map at the top to navigate between stages. Each stage will show the actual engineering drawing alongside a plain-language explanation.</p>
+    <div class="chips" id="ep-chips"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── PDF.js setup ───────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let vocPdf = null;
+let zoomLevel = 1.0;
+let currentStage = 0;
+let lang = 'en';
+let mode = 'adsorb';
+
+// Load the main VOC PDF
+pdfjsLib.getDocument('voc-system-drawing.pdf').promise.then(pdf => {
+  vocPdf = pdf;
+  renderStrip(); // render full drawing at top
+});
+
+// ─── Render full system strip (page 1, lower half = front elevation) ────────
+function renderStrip() {
+  if (!vocPdf) return;
+  vocPdf.getPage(1).then(page => {
+    const vp = page.getViewport({ scale: 2.5 });
+    const canvas = document.getElementById('strip-canvas');
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(() => {
+      document.getElementById('strip-loading').style.display = 'none';
+      // Show annotations
+      ['ann0','ann1','ann2','ann3','ann4'].forEach(id => {
+        document.getElementById(id).style.display = 'block';
+      });
+    });
+  });
+}
+
+// ─── Render detail canvas (cropped region per stage) ─────────────────────────
+// Each stage maps to a horizontal crop region of the engineering drawing
+// Page is ~2970px wide at scale 2.5. Equipment layout (from left):
+//  Cyclone: 0–18%   Filter: 18–45%   Carbon beds: 45–65%   Furnace: 65–88%   Fan: 88–100%
+const stageCrops = [
+  // [xStart%, yStart%, xEnd%, yEnd%] of full page at scale 2.5
+  { x: 0,    y: 30, w: 22,  h: 40 },  // 0 = spray booth (left edge, cyclone intake)
+  { x: 0,    y: 28, w: 22,  h: 42 },  // 1 = cyclone tower (left)
+  { x: 18,   y: 28, w: 28,  h: 42 },  // 2 = dry filter banks (middle-left)
+  { x: 43,   y: 28, w: 26,  h: 42 },  // 3 = activated carbon beds (middle)
+  { x: 62,   y: 28, w: 26,  h: 42 },  // 4 = catalytic combustion (right)
+  { x: 82,   y: 28, w: 18,  h: 42 },  // 5 = fan + exhaust output
+];
+
+let detailScale = 3.2;
+
+function renderDetail(stageIdx) {
+  if (!vocPdf) return;
+  document.getElementById('detail-loading').style.display = 'flex';
+  document.getElementById('detail-loading').textContent = 'Loading drawing…';
+
+  vocPdf.getPage(1).then(page => {
+    const baseVp = page.getViewport({ scale: 1 });
+    const fullW = baseVp.width;
+    const fullH = baseVp.height;
+
+    const crop = stageCrops[stageIdx] || stageCrops[0];
+    const sx = (crop.x / 100) * fullW;
+    const sy = (crop.y / 100) * fullH;
+    const sw = (crop.w / 100) * fullW;
+    const sh = (crop.h / 100) * fullH;
+
+    const scale = detailScale * zoomLevel;
+    const vp = page.getViewport({ scale });
+
+    const canvas = document.getElementById('detail-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas size = cropped region size
+    const cw = Math.round(sw * scale);
+    const ch = Math.round(sh * scale);
+    canvas.width = cw;
+    canvas.height = ch;
+
+    // Translate so we only see the cropped region
+    ctx.save();
+    ctx.translate(-sx * scale, -sy * scale);
+    page.render({ canvasContext: ctx, viewport: vp }).promise.then(() => {
+      ctx.restore();
+      document.getElementById('detail-loading').style.display = 'none';
+    });
+  });
+}
+
+// ─── Zoom controls ────────────────────────────────────────────────────────────
+function zoomIn()    { zoomLevel = Math.min(zoomLevel + 0.3, 3.0); updateZoom(); }
+function zoomOut()   { zoomLevel = Math.max(zoomLevel - 0.3, 0.5); updateZoom(); }
+function zoomReset() { zoomLevel = 1.0; updateZoom(); }
+function updateZoom() {
+  document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+  renderDetail(currentStage);
+}
+
+// ─── Language data ─────────────────────────────────────────────────────────
+const D = {
+  en: {
+    pgTitle: '💨 VOC Air Treatment System — Engineering Drawings + Explanation',
+    stripTitle: '📐 Actual Engineering Drawing — Full VOC System (from factory document)',
+    drawLabel: '📐 Engineering Drawing — Section View',
+    mbt1: 'Adsorption (Normal Operation)',
+    mbt2: 'Desorption + Combustion (Cleaning Cycle)',
+    fn: ['🎨 Spray Booth','🌀 Stage 1: Cyclone','🧽 Stage 2: Dry Filter','🪨 Stage 3: Activated Carbon','🔥 Stage 4: Combustion','✅ Clean Air Out'],
+    modeAdsorb: '<strong>Adsorption Mode (Normal):</strong> Dirty air flows left → right continuously through all 4 stages. VOCs are trapped by the carbon beds at Stage 3. Purified air exits to atmosphere.',
+    modeDesorb: '<strong>Desorption + Combustion Mode (Cleaning):</strong> When carbon beds are full, hot air (80–120°C) reverses through them, releasing concentrated VOC gas. That concentrated gas is sent to the catalytic furnace (Stage 4) to be burned into harmless CO₂ + H₂O. The furnace heat is recycled back to power the hot air.',
+    stages: [
+      {
+        tag: 'Source',
+        title: '🎨 Spray Booth — Where VOCs Come From',
+        body: 'The spray painting booths are where VOC pollution originates. As paint is sprayed onto ceramic cups, volatile chemical solvents evaporate into the air — toluene, xylene, benzene, and non-methane hydrocarbons.\n\nThis contaminated air is captured by extraction fans and ductwork connected directly to the VOC treatment system. The total airflow handled is 60,000 m³/hour — imagine filling 24 Olympic swimming pools every hour.\n\nThe drawing shows the extraction connection at the far left of the system.',
+        chips: ['60,000 m³/h total airflow','VOC inlet: ≤300 mg/m³','Pollutants: toluene, xylene, benzene','Captured by extraction fans'],
+        chipType: 'orange'
+      },
+      {
+        tag: 'Stage 1',
+        title: '🌀 Cyclone Tower — Wet Pre-Treatment',
+        body: 'The first unit you see on the LEFT of the engineering drawing is the Cyclone Tower (气旋喷淋塔). Dirty air enters tangentially — meaning it enters at an angle, not straight in. This makes the air spin like a tornado inside the tower.\n\nAs the air spins, centrifugal force flings heavy particles (paint droplets, large dust) outward to the walls. Water is simultaneously sprayed inside, capturing the particles as they hit the wet walls and dragging them down to a water tank at the base.\n\nThe top drawing (3D view) shows the ductwork connecting the spray booth extraction fan to the cyclone tower inlet on the left.',
+        chips: ['Tangential air entry','Centrifugal force separation','Water spray inside tower','Removes: paint mist + large dust','PP/stainless steel construction'],
+        chipType: 'blue'
+      },
+      {
+        tag: 'Stage 2',
+        title: '🧽 Dry Filter Banks — Fine Filtration',
+        body: 'After the cyclone tower, the air still contains fine dust and water mist too small for centrifugal force to catch. The Dry Filter (干式过滤器) is the large rectangular box unit visible in the middle-left of the engineering drawing.\n\nInside are multiple layers of filter media — glass fibre and polyester felt — arranged in pleated panels (the zig-zag pattern visible in the drawing cross-section). Air is forced through these layers, and particles down to 1–5 micrometres are captured.\n\nA differential pressure gauge monitors when the filters are blocked (increasing resistance = clogged filter = time to replace cartridges). This stage also removes the water mist left over from the cyclone tower, which is important to protect the activated carbon beds in Stage 3.',
+        chips: ['Media: glass fibre + polyester felt','Filtration: 1–5 micrometres','Replaceable filter cartridges','Pressure gauge monitoring','Protects carbon beds downstream'],
+        chipType: 'gray'
+      },
+      {
+        tag: 'Stage 3',
+        title: '🪨 Activated Carbon Beds — VOC Adsorption / Desorption',
+        body: 'The large central housing units in the drawing contain honeycomb activated carbon beds — this is the key VOC-capturing stage.\n\n🔵 ADSORPTION (normal): Air flows through beds of activated carbon. The carbon has an enormous surface area (millions of microscopic pores per gram). VOC molecules physically bond to the pore surfaces — this is adsorption. The cleaned air passes through to Stage 4.\n\n🔴 DESORPTION (cleaning cycle): When the carbon is saturated, hot air at 80–120°C is blown in reverse. The heat breaks the bond between VOC molecules and the carbon surface — the VOCs detach and form a small, very concentrated stream of gas. This concentrated gas is piped directly to Stage 4 for destruction.\n\nThe system has multiple carbon bed chambers so that while one is being cleaned (desorption), the others continue adsorbing — operation never stops.',
+        chips: ['Honeycomb activated carbon','Adsorption: VOC bonds to carbon','Desorption: 80–120°C hot air reversal','Multiple beds — continuous operation','Auto valve switching between modes'],
+        chipType: 'orange'
+      },
+      {
+        tag: 'Stage 4',
+        title: '🔥 Catalytic Combustion Furnace — VOC Destruction',
+        body: 'On the RIGHT side of the engineering drawing, you can see the catalytic combustion unit — the two large box-shaped housings with the fan on the far right.\n\nThis furnace receives the concentrated VOC gas from Stage 3 desorption and destroys it completely. Normally, burning organic chemicals requires 700–800°C — but this system uses a CATALYST (a metal-coated ceramic honeycomb), which allows the oxidation reaction to happen at only 250–400°C. This is why it\'s called "flameless combustion" — there\'s no visible fire.\n\nThe chemical reaction: VOC molecules + O₂ → CO₂ + H₂O (carbon dioxide + water vapour). Both are harmless.\n\n♻️ ENERGY RECOVERY: The heat generated by combustion (the furnace runs hot) is recycled — it heats the air used in Stage 3 desorption. This self-sustaining heat loop dramatically reduces operating energy costs.',
+        chips: ['Catalyst: metal-coated ceramic honeycomb','Operating temp: 250–400°C','No open flame','Output: CO₂ + H₂O','Heat recycled → Stage 3 desorption','Efficiency: >95%'],
+        chipType: 'red'
+      },
+      {
+        tag: 'Output',
+        title: '✅ Clean Air — Released to Atmosphere',
+        body: 'After passing through all 4 stages, the air exits through the exhaust fan and stack on the far right of the engineering drawing. The purification efficiency is greater than 95% — meaning over 95% of the VOC content has been removed and destroyed.\n\nThe treated exhaust meets the Thai Environmental Protection Department requirements and the Chinese GB33/2146-2018 emission standards:\n• Benzene: ≤1.0 mg/m³\n• Total VOCs: ≤120 mg/m³\n• Non-methane hydrocarbons: ≤60 mg/m³\n\nThe fan visible on the far right of the drawing maintains the airflow through the entire system using negative pressure (suction), ensuring dirty air never leaks out of the ductwork into the factory.',
+        chips: ['Purification: >95%','Benzene output: ≤1.0 mg/m³','Total VOC output: ≤120 mg/m³','Meets Thai + Chinese standards','Exhaust fan maintains system pressure'],
+        chipType: 'green'
+      }
+    ]
+  },
+  th: {
+    pgTitle: '💨 ระบบบำบัดอากาศ VOC — แบบแปลนวิศวกรรม + คำอธิบาย',
+    stripTitle: '📐 แบบแปลนวิศวกรรมจริง — ระบบ VOC ครบชุด (จากเอกสารโรงงาน)',
+    drawLabel: '📐 แบบแปลนวิศวกรรม — มุมมองส่วน',
+    mbt1: 'โหมดดูดซับ (การทำงานปกติ)',
+    mbt2: 'โหมดคายซับ + เผาไหม้ (รอบทำความสะอาด)',
+    fn: ['🎨 บู๊ธพ่นสี','🌀 ขั้น 1: ไซโคลน','🧽 ขั้น 2: กรองแห้ง','🪨 ขั้น 3: ถ่านกัมมันต์','🔥 ขั้น 4: เผาเร่งปฏิกิริยา','✅ อากาศสะอาดออก'],
+    modeAdsorb: '<strong>โหมดดูดซับ (ปกติ):</strong> อากาศสกปรกไหลซ้าย → ขวาผ่านทั้ง 4 ขั้นตอนอย่างต่อเนื่อง VOC ถูกดักจับโดยชั้นถ่านกัมมันต์ที่ขั้น 3 อากาศบริสุทธิ์ถูกปล่อยสู่ชั้นบรรยากาศ',
+    modeDesorb: '<strong>โหมดคายซับ + เผาไหม้ (ทำความสะอาด):</strong> เมื่อถ่านกัมมันต์อิ่มตัว ลมร้อน (80–120°C) เป่าย้อนผ่านชั้นถ่าน ปล่อยก๊าซ VOC เข้มข้น ก๊าซนั้นถูกส่งไปยังเตาเผาเร่งปฏิกิริยา (ขั้น 4) เพื่อเผาให้เป็น CO₂ + H₂O ที่ไม่เป็นอันตราย ความร้อนจากเตาเผาถูกนำกลับมาใช้ขับเคลื่อนลมร้อน',
+    stages: [
+      {
+        tag: 'แหล่งกำเนิด',
+        title: '🎨 บู๊ธพ่นสี — แหล่งกำเนิด VOC',
+        body: 'บู๊ธพ่นสีคือจุดที่มลพิษ VOC เกิดขึ้น เมื่อพ่นสีลงบนแก้วเซรามิก ตัวทำละลายสารเคมีระเหยเข้าสู่อากาศ ได้แก่ โทลูอีน ไซลีน เบนซีน และไฮโดรคาร์บอนที่ไม่ใช่มีเทน\n\nอากาศปนเปื้อนนี้ถูกดักจับโดยพัดลมดูดและท่อลมที่ต่อกับระบบบำบัด VOC โดยตรง อัตราการไหลของอากาศทั้งหมดที่จัดการคือ 60,000 ม.³/ชม.\n\nแบบแปลนแสดงการเชื่อมต่อท่อดูดอากาศที่ด้านซ้ายสุดของระบบ',
+        chips: ['อากาศรวม: 60,000 ม.³/ชม.','VOC ขาเข้า: ≤300 มก./ม.³','สาร: โทลูอีน, ไซลีน, เบนซีน','ดักจับด้วยพัดลมดูด'],
+        chipType: 'orange'
+      },
+      {
+        tag: 'ขั้นที่ 1',
+        title: '🌀 หอไซโคลน — บำบัดเบื้องต้นแบบเปียก',
+        body: 'หน่วยแรกที่เห็นด้านซ้ายของแบบแปลนวิศวกรรมคือหอไซโคลน (气旋喷淋塔) อากาศสกปรกเข้าในแนวเฉียง ทำให้อากาศหมุนเป็นวงกลมเหมือนพายุทอร์นาโดภายในหอ\n\nขณะที่อากาศหมุน แรงเหวี่ยงหนีศูนย์กลางจะเหวี่ยงอนุภาคหนัก (หยดสี, ฝุ่นขนาดใหญ่) ออกไปยังผนัง น้ำถูกฉีดสเปรย์ภายในพร้อมกัน ดักจับอนุภาคขณะที่กระทบผนังเปียกและพาลงสู่ถังน้ำที่ฐาน\n\nภาพวาด 3 มิติแสดงท่อลมที่เชื่อมต่อพัดลมดูดจากบู๊ธพ่นสีกับช่องรับลมเข้าของหอไซโคลนทางซ้าย',
+        chips: ['ลมเข้าในแนวเฉียง','การแยกด้วยแรงเหวี่ยง','ฉีดน้ำภายในหอ','กำจัด: ละอองสี + ฝุ่นขนาดใหญ่','โครงสร้าง PP/สแตนเลส'],
+        chipType: 'blue'
+      },
+      {
+        tag: 'ขั้นที่ 2',
+        title: '🧽 ตัวกรองแห้ง — การกรองละเอียด',
+        body: 'หลังจากหอไซโคลน อากาศยังมีฝุ่นละเอียดและละอองน้ำที่เล็กเกินไป ตัวกรองแห้ง (干式过滤器) คือกล่องสี่เหลี่ยมขนาดใหญ่ที่มองเห็นตรงกลางซ้ายของแบบแปลน\n\nภายในมีชั้นวัสดุกรองหลายชั้น — ใยแก้วและผ้าโพลีเอสเตอร์ — จัดเรียงเป็นแผ่นจีบ (ลวดลายซิกแซกที่มองเห็นในภาพหน้าตัด) อากาศถูกบังคับผ่านชั้นเหล่านี้ และอนุภาคลงถึง 1–5 ไมโครเมตรถูกดักจับ\n\nมาตรวัดความดันต่างตรวจสอบเมื่อตัวกรองอุดตัน ขั้นตอนนี้ยังกำจัดละอองน้ำจากหอไซโคลน ซึ่งสำคัญมากสำหรับการปกป้องชั้นถ่านกัมมันต์ในขั้นที่ 3',
+        chips: ['วัสดุ: ใยแก้ว + ผ้าโพลีเอสเตอร์','การกรอง: 1–5 ไมโครเมตร','ตลับกรองเปลี่ยนได้','มาตรวัดความดันตรวจสอบ','ปกป้องชั้นถ่านกัมมันต์'],
+        chipType: 'gray'
+      },
+      {
+        tag: 'ขั้นที่ 3',
+        title: '🪨 ชั้นถ่านกัมมันต์ — การดูดซับ/คายซับ VOC',
+        body: 'ตู้ขนาดใหญ่ตรงกลางของแบบแปลนบรรจุชั้นถ่านกัมมันต์รังผึ้ง — นี่คือขั้นตอนสำคัญในการดักจับ VOC\n\n🔵 การดูดซับ (ปกติ): อากาศไหลผ่านชั้นถ่านกัมมันต์ ถ่านมีพื้นที่ผิวมหาศาล (รูพรุนจิ๋วหลายล้านรูต่อกรัม) โมเลกุล VOC ติดทางกายภาพกับพื้นผิวรูพรุน\n\n🔴 การคายซับ (รอบทำความสะอาด): เมื่อถ่านอิ่มตัว ลมร้อน 80–120°C เป่าย้อนกลับ ความร้อนทำลายพันธะระหว่างโมเลกุล VOC กับพื้นผิวถ่าน VOC หลุดออกมาเป็นก๊าซเข้มข้น ก๊าซนี้ถูกส่งตรงไปยังขั้นที่ 4 เพื่อทำลาย\n\nระบบมีห้องถ่านหลายห้อง ขณะที่ห้องหนึ่งถูกทำความสะอาด ห้องอื่นๆ ทำงานดูดซับต่อ — ไม่มีการหยุดทำงาน',
+        chips: ['ถ่านกัมมันต์รังผึ้ง','ดูดซับ: VOC ติดถ่าน','คายซับ: ลมร้อน 80–120°C','หลายห้อง — ทำงานต่อเนื่อง','สลับวาล์วอัตโนมัติ'],
+        chipType: 'orange'
+      },
+      {
+        tag: 'ขั้นที่ 4',
+        title: '🔥 เตาเผาเร่งปฏิกิริยา — การทำลาย VOC',
+        body: 'ทางด้านขวาของแบบแปลน เห็นหน่วยเผาเร่งปฏิกิริยา — กล่องสี่เหลี่ยมขนาดใหญ่สองหน่วยพร้อมพัดลมที่ขวาสุด\n\nเตาเผานี้รับก๊าซ VOC เข้มข้นจากการคายซับขั้น 3 และทำลายอย่างสมบูรณ์ ปกติการเผาสารเคมีอินทรีย์ต้องการ 700–800°C — แต่ระบบนี้ใช้ตัวเร่งปฏิกิริยา (เซรามิกรังผึ้งเคลือบโลหะ) ซึ่งทำให้ปฏิกิริยาออกซิเดชันเกิดขึ้นที่เพียง 250–400°C นี่คือเหตุผลที่เรียกว่า "การเผาไหม้ไร้เปลวไฟ"\n\nปฏิกิริยาเคมี: โมเลกุล VOC + O₂ → CO₂ + H₂O ทั้งสองไม่เป็นอันตราย\n\n♻️ การกู้คืนพลังงาน: ความร้อนที่เกิดจากการเผาไหม้ถูกรีไซเคิล — ใช้ให้ความร้อนลมสำหรับคายซับในขั้น 3 ลดต้นทุนพลังงานอย่างมาก',
+        chips: ['ตัวเร่งปฏิกิริยา: เซรามิกรังผึ้งเคลือบโลหะ','อุณหภูมิ: 250–400°C','ไม่มีเปลวไฟ','ผลลัพธ์: CO₂ + H₂O','ความร้อนรีไซเคิล → ขั้น 3','ประสิทธิภาพ: >95%'],
+        chipType: 'red'
+      },
+      {
+        tag: 'ผลลัพธ์',
+        title: '✅ อากาศสะอาด — ปล่อยสู่ชั้นบรรยากาศ',
+        body: 'หลังผ่านทั้ง 4 ขั้นตอน อากาศออกผ่านพัดลมและปล่องควันทางขวาสุดของแบบแปลน ประสิทธิภาพการบำบัดมากกว่า 95% — หมายความว่า VOC มากกว่า 95% ถูกกำจัดและทำลายแล้ว\n\nอากาศที่บำบัดแล้วตรงตามข้อกำหนดของกรมสิ่งแวดล้อมไทยและมาตรฐาน GB33/2146-2018 ของจีน:\n• เบนซีน: ≤1.0 มก./ม.³\n• VOC รวม: ≤120 มก./ม.³\n• ไฮโดรคาร์บอนที่ไม่ใช่มีเทน: ≤60 มก./ม.³',
+        chips: ['การบำบัด: >95%','เบนซีนออก: ≤1.0 มก./ม.³','VOC รวมออก: ≤120 มก./ม.³','ตรงตามมาตรฐานไทยและจีน','พัดลมดูดรักษาความดันระบบ'],
+        chipType: 'green'
+      }
+    ]
+  }
+};
+
+const chipColors = {
+  blue: 'chip-blue', red: 'chip-red', green: 'chip-green',
+  orange: 'chip-orange', gray: 'chip-gray'
+};
+const nodeColors = ['#fff3e0','#e0f7ff','#f3f3f3','#fff5e0','#ffe8e8','#e8ffe8'];
+
+function applyLang() {
+  const d = D[lang];
+  document.getElementById('pg-title').textContent = d.pgTitle;
+  document.getElementById('strip-title').textContent = d.stripTitle;
+  document.getElementById('draw-label').textContent = d.drawLabel;
+  document.getElementById('mbt1').textContent = d.mbt1;
+  document.getElementById('mbt2').textContent = d.mbt2;
+  d.fn.forEach((txt, i) => {
+    const el = document.getElementById('fn' + i + 't');
+    if (el) el.textContent = txt.replace(/^[^\s]+\s/, '');
+    const node = document.getElementById('fn' + i);
+    if (node) node.childNodes[0].textContent = txt.split(' ')[0] + ' ';
+  });
+  // Refresh info bar
+  const isDesorb = mode === 'desorb';
+  document.getElementById('info-bar').innerHTML = isDesorb ? d.modeDesorb : d.modeAdsorb;
+  // Refresh detail if stage is selected
+  if (currentStage >= 0) updateExplain(currentStage);
+}
+
+function setLang(l, btn) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyLang();
+}
+
+function setMode(m, btn) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const d = D[lang];
+  document.getElementById('info-bar').innerHTML = m === 'desorb' ? d.modeDesorb : d.modeAdsorb;
+}
+
+function goStage(idx) {
+  currentStage = idx;
+  // Update flow node highlights
+  for (let i = 0; i <= 5; i++) {
+    const n = document.getElementById('fn' + i);
+    n.classList.toggle('active-node', i === idx);
+  }
+  // Show mode bar and info bar only when a stage is selected
+  document.getElementById('mode-bar-wrap').style.display = idx >= 1 ? 'flex' : 'none';
+  document.getElementById('info-bar').style.display = idx >= 1 ? 'block' : 'none';
+  const d = D[lang];
+  document.getElementById('info-bar').innerHTML = mode === 'desorb' ? d.modeDesorb : d.modeAdsorb;
+
+  updateExplain(idx);
+  renderDetail(idx);
+}
+
+function updateExplain(idx) {
+  const d = D[lang];
+  const s = d.stages[idx];
+  document.getElementById('ep-tag').textContent = s.tag;
+  document.getElementById('ep-title').textContent = s.title;
+  const bodyEl = document.getElementById('ep-body');
+  bodyEl.style.whiteSpace = 'pre-line';
+  bodyEl.textContent = s.body;
+  const cc = chipColors[s.chipType] || 'chip-blue';
+  document.getElementById('ep-chips').innerHTML = s.chips.map(c => `<span class="chip ${cc}">${c}</span>`).join('');
+}
+
+// Init: click stage 0
+window.addEventListener('load', () => {
+  setTimeout(() => goStage(1), 500); // auto-open Stage 1
+});
+</script>
+</body>
+</html>

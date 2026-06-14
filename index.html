@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function() {
+  var CORRECT = 'bestsub2026';
+  var SESSION_KEY = 'bsf_auth';
+  if (sessionStorage.getItem(SESSION_KEY) !== '1') {
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.style.display = 'none';
+    });
+    var attempt = 0;
+    function ask() {
+      var pw = prompt(attempt === 0
+        ? '🔒 BestSub Ceramic Factory\nEnter password to continue:'
+        : '❌ Incorrect password. Try again:');
+      if (pw === null) {
+        document.write('<div style="font-family:sans-serif;text-align:center;padding:80px;color:#555"><h2>🔒 Access Denied</h2><p>Please refresh the page to try again.</p></div>');
+      } else if (pw === CORRECT) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        document.body.style.display = '';
+      } else {
+        attempt++;
+        if (attempt >= 3) {
+          document.write('<div style="font-family:sans-serif;text-align:center;padding:80px;color:#e05c5c"><h2>🔒 Too Many Attempts</h2><p>Please refresh the page to try again.</p></div>');
+        } else {
+          ask();
+        }
+      }
+    }
+    window.addEventListener('DOMContentLoaded', ask);
+  }
+})();
+</script>
+<title>BestSub Ceramic Factory — Learning Guide</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', 'Noto Sans Thai', sans-serif; background: #f5f7fa; color: #1a1a2e; }
+  .app { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  .lang-bar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+  .lang-toggle { display: flex; background: #e2e8f0; border-radius: 24px; padding: 3px; gap: 2px; }
+  .lang-btn { padding: 6px 18px; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; background: transparent; color: #666; transition: all 0.2s; }
+  .lang-btn.active { background: white; color: #1a1a2e; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+
+  .title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 16px; }
+
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tab { padding: 8px 14px; border-radius: 20px; border: 2px solid #ddd; cursor: pointer; font-size: 13px; font-weight: 600; background: white; color: #555; transition: all 0.2s; }
+  .tab:hover { border-color: #4a90d9; color: #4a90d9; }
+  .tab.active { background: #4a90d9; border-color: #4a90d9; color: white; }
+
+  .section { display: none; animation: fadein 0.3s; }
+  .section.active { display: block; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .info-box { background: white; border-radius: 12px; padding: 16px; margin-bottom: 14px; border-left: 4px solid #4a90d9; }
+  .info-box h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+  .info-box p, .info-box li { font-size: 13px; color: #444; line-height: 1.7; }
+  .info-box ul { padding-left: 18px; margin-top: 4px; }
+
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 14px 0; }
+  .flow-box { background: white; border: 2px solid #ddd; border-radius: 10px; padding: 10px 12px; text-align: center; min-width: 88px; cursor: pointer; transition: all 0.2s; }
+  .flow-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .flow-box.selected { border-color: #4a90d9; background: #e8f3ff; }
+  .flow-box .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .flow-box .label { font-size: 11px; font-weight: 600; color: #333; }
+  .flow-box .step { font-size: 10px; color: #888; margin-bottom: 2px; }
+  .arrow { font-size: 20px; color: #aaa; align-self: center; }
+  .detail-panel { background: #e8f3ff; border-radius: 10px; padding: 14px; margin-top: 10px; border: 1px solid #b3d4f5; }
+  .detail-panel h4 { font-size: 14px; font-weight: 700; color: #1a55a0; margin-bottom: 8px; }
+  .detail-panel p { font-size: 13px; color: #333; line-height: 1.6; }
+  .facts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .fact-chip { background: #4a90d9; color: white; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; }
+
+  .box-wash { border-color: #3ab5e6; } .box-wash.selected, .box-wash:hover { background: #e0f7ff; }
+  .box-spray { border-color: #f5a623; } .box-spray.selected, .box-spray:hover { background: #fff5e0; }
+  .box-kiln { border-color: #e05c5c; } .box-kiln.selected, .box-kiln:hover { background: #ffe8e8; }
+  .box-pack { border-color: #5cb85c; } .box-pack.selected, .box-pack:hover { background: #e8ffe8; }
+  .box-print { border-color: #9b59b6; } .box-print.selected, .box-print:hover { background: #f3e8ff; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
+
+  .stage-list { display: flex; flex-direction: column; gap: 10px; }
+  .stage-item { display: flex; gap: 12px; align-items: flex-start; background: white; border-radius: 10px; padding: 12px 14px; }
+  .stage-num { min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+  .stage-text h4 { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+  .stage-text p { font-size: 12px; color: #555; line-height: 1.6; }
+
+  .kiln-bar { display: flex; height: 60px; border-radius: 10px; overflow: hidden; margin: 14px 0; border: 1px solid #ddd; }
+  .kiln-zone { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; text-align: center; padding: 4px; cursor: pointer; transition: opacity 0.2s; }
+  .kiln-zone:hover { opacity: 0.8; }
+
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #555; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  .highlight { background: #fff8e1; border: 1px solid #ffc107; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+  .highlight p { font-size: 13px; color: #555; line-height: 1.6; }
+  .highlight strong { color: #e67e00; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="lang-bar">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧 English</button>
+      <button class="lang-btn" onclick="setLang('th',this)">🇹🇭 ภาษาไทย</button>
+    </div>
+  </div>
+
+  <div class="title" data-en="🏭 BestSub Ceramic Factory — Learning Guide" data-th="🏭 โรงงานเซรามิก BestSub — คู่มือการเรียนรู้"></div>
+  <div class="subtitle" data-en="For beginners with no factory experience. Click each step or section to learn more." data-th="สำหรับผู้เริ่มต้นที่ไม่มีประสบการณ์โรงงาน คลิกแต่ละขั้นตอนเพื่อเรียนรู้เพิ่มเติม"></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showSection('overview',this)" data-en="🗺️ Overview" data-th="🗺️ ภาพรวม"></div>
+    <div class="tab" onclick="showSection('production',this)" data-en="☕ Production" data-th="☕ กระบวนการผลิต"></div>
+    <div class="tab" onclick="showSection('kiln',this)" data-en="🔥 Tunnel Kiln" data-th="🔥 เตาอบอุโมงค์"></div>
+    <div class="tab" onclick="showSection('spray',this)" data-en="🎨 Spray Painting" data-th="🎨 การพ่นสี"></div>
+    <div class="tab" onclick="showSection('air',this)" data-en="💨 Air Treatment" data-th="💨 การบำบัดอากาศ"></div>
+    <div class="tab" onclick="showSection('water',this)" data-en="💧 Water Treatment" data-th="💧 การบำบัดน้ำ"></div>
+    <div class="tab" onclick="showSection('floors',this)" data-en="🏗️ Factory Floors" data-th="🏗️ ชั้นโรงงาน"></div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="overview">
+    <div class="info-box">
+      <h3 data-en="What is BestSub Ceramic Factory?" data-th="โรงงานเซรามิก BestSub คืออะไร?"></h3>
+      <p data-en="This is a factory in Thailand (Bestsub Innovations Thailand Co., Ltd.) that makes custom-printed ceramic mugs and thermos cups. The factory takes plain, blank ceramic cups and transforms them into colourful, branded products through: cleaning → spray painting → kiln firing → packaging." data-th="นี่คือโรงงานในประเทศไทย (Bestsub Innovations Thailand Co., Ltd.) ที่ผลิตแก้วเซรามิกและกระติกน้ำแบบพิมพ์ลาย โรงงานรับแก้วเซรามิกเปล่าแล้วแปลงเป็นผลิตภัณฑ์สีสันสดใสผ่านขั้นตอน: ล้างทำความสะอาด → พ่นสี → เผาในเตาอบ → บรรจุหีบห่อ"></p>
+    </div>
+    <div class="highlight">
+      <p><span data-en="🏭 Big Picture: A raw ceramic cup enters the factory → gets cleaned → painted → baked in a long oven → inspected → packaged → shipped. Along the way, the factory carefully treats the dirty air (from paint fumes) and dirty water (from washing) so it doesn't pollute the environment." data-th="🏭 ภาพรวม: แก้วเซรามิกดิบเข้าสู่โรงงาน → ล้างทำความสะอาด → พ่นสี → เผาในเตาอบยาว → ตรวจสอบคุณภาพ → บรรจุหีบห่อ → จัดส่ง ตลอดกระบวนการ โรงงานบำบัดอากาศเสีย (จากควันสี) และน้ำเสีย (จากการล้าง) เพื่อไม่ให้ส่งผลกระทบต่อสิ่งแวดล้อม"></span></p>
+    </div>
+    <div class="cols">
+      <div class="info-box" style="border-left-color:#f5a623;">
+        <h3 data-en="🏢 Building Layout" data-th="🏢 ผังอาคาร"></h3>
+        <ul>
+          <li><span data-en="Floor 1: Main production — spray painting, tunnel kiln, packaging, wastewater treatment" data-th="ชั้น 1: การผลิตหลัก — พ่นสี, เตาอบอุโมงค์, บรรจุหีบห่อ, บำบัดน้ำเสีย"></span></li>
+          <li><span data-en="Floor 2: Sublimation printing lines (flat-plate & cup-baking), robot line" data-th="ชั้น 2: สายการพิมพ์ซับลิเมชัน (แผ่นราบ & อบแก้ว), สายหุ่นยนต์"></span></li>
+          <li><span data-en="Also includes: Offices, meeting room, change rooms, pantry, product showcase" data-th="รวมถึง: สำนักงาน, ห้องประชุม, ห้องเปลี่ยนเสื้อผ้า, ห้องพัก, พื้นที่แสดงสินค้า"></span></li>
+        </ul>
+      </div>
+      <div class="info-box" style="border-left-color:#5cb85c;">
+        <h3 data-en="🌿 Environmental Systems" data-th="🌿 ระบบสิ่งแวดล้อม"></h3>
+        <ul>
+          <li><span data-en="VOC Air Treatment: Cleans toxic paint fumes — >95% efficiency" data-th="บำบัดอากาศ VOC: กำจัดควันสีพิษ — ประสิทธิภาพ >95%"></span></li>
+          <li><span data-en="Wastewater Treatment: Treats paint-contaminated water, recycles it" data-th="บำบัดน้ำเสีย: บำบัดน้ำปนเปื้อนสี แล้วนำกลับมาใช้ใหม่"></span></li>
+          <li><span data-en="Pure Water (RO): Purifies tap water for cup-washing process" data-th="น้ำบริสุทธิ์ (RO): กรองน้ำประปาสำหรับล้างแก้ว"></span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-box" style="border-left-color:#9b59b6;">
+      <h3 data-en="📦 Two Production Routes" data-th="📦 สองเส้นทางการผลิต"></h3>
+      <ul>
+        <li><strong data-en="Route A (Standard):" data-th="เส้นทาง A (มาตรฐาน):"></strong> <span data-en="Wash → Spray Paint → Kiln → QC → Bag Seal → Box → Ship" data-th="ล้าง → พ่นสี → เตาอบ → ตรวจ QC → ซีลถุง → บรรจุกล่อง → ส่ง"></span></li>
+        <li><strong data-en="Route B (With Bottom Label):" data-th="เส้นทาง B (มีสติกเกอร์ก้น):"></strong> <span data-en="Same as Route A + bottom label printing + second drying step" data-th="เหมือนเส้นทาง A + พิมพ์สติกเกอร์ก้น + อบแห้งครั้งที่สอง"></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PRODUCTION -->
+  <div class="section" id="production">
+    <div class="info-box">
+      <h3 data-en="Step-by-Step Production Flow — click any step to learn more" data-th="ขั้นตอนการผลิตทีละขั้น — คลิกแต่ละขั้นตอนเพื่อเรียนรู้เพิ่มเติม"></h3>
+      <p data-en="Follow a ceramic mug from raw blank to finished product." data-th="ติดตามแก้วเซรามิกตั้งแต่วัตถุดิบจนถึงสินค้าสำเร็จรูป"></p>
+    </div>
+    <div class="flow">
+      <div class="flow-box box-wash" onclick="showDetail('raw')"><span class="step" data-en="Start" data-th="เริ่มต้น"></span><span class="icon">🫙</span><span class="label" data-en="Raw Cup" data-th="แก้วดิบ"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-wash" onclick="showDetail('wash')"><span class="step" data-en="Step 1" data-th="ขั้นที่ 1"></span><span class="icon">🚿</span><span class="label" data-en="Cup Washing" data-th="ล้างแก้ว"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-wash" onclick="showDetail('dry')"><span class="step" data-en="Step 2" data-th="ขั้นที่ 2"></span><span class="icon">💨</span><span class="label" data-en="Dry & UV" data-th="อบแห้ง & UV"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-spray" onclick="showDetail('spray')"><span class="step" data-en="Step 3" data-th="ขั้นที่ 3"></span><span class="icon">🎨</span><span class="label" data-en="Spray Paint" data-th="พ่นสี"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-kiln" onclick="showDetail('kiln')"><span class="step" data-en="Step 4" data-th="ขั้นที่ 4"></span><span class="icon">🔥</span><span class="label" data-en="Tunnel Kiln" data-th="เตาอบ"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-pack" onclick="showDetail('cool')"><span class="step" data-en="Step 5" data-th="ขั้นที่ 5"></span><span class="icon">❄️</span><span class="label" data-en="Air Cooling" data-th="ระบายความร้อน"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-pack" onclick="showDetail('qc')"><span class="step" data-en="Step 6" data-th="ขั้นที่ 6"></span><span class="icon">🔍</span><span class="label" data-en="QC Inspect" data-th="ตรวจ QC"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-print" onclick="showDetail('label')"><span class="step" data-en="Step 7*" data-th="ขั้นที่ 7*"></span><span class="icon">🖨️</span><span class="label" data-en="Label Print" data-th="พิมพ์สติกเกอร์"></span></div>
+      <div class="arrow">→</div>
+      <div class="flow-box box-pack" onclick="showDetail('pack')"><span class="step" data-en="Step 8" data-th="ขั้นที่ 8"></span><span class="icon">📦</span><span class="label" data-en="Packaging" data-th="บรรจุหีบห่อ"></span></div>
+    </div>
+    <div id="detail-area" style="display:none;" class="detail-panel">
+      <h4 id="detail-title"></h4>
+      <p id="detail-body"></p>
+      <div class="facts" id="detail-facts"></div>
+    </div>
+    <div class="legend" style="margin-top:14px;">
+      <div class="legend-item"><div class="legend-dot" style="background:#3ab5e6;"></div><span data-en="Cleaning" data-th="ทำความสะอาด"></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f5a623;"></div><span data-en="Spray Painting" data-th="พ่นสี"></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e05c5c;"></div><span data-en="Kiln Firing" data-th="เผาในเตาอบ"></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5cb85c;"></div><span data-en="Packaging" data-th="บรรจุหีบห่อ"></span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#9b59b6;"></div><span data-en="*Route B only" data-th="*เฉพาะเส้นทาง B"></span></div>
+    </div>
+  </div>
+
+  <!-- KILN -->
+  <div class="section" id="kiln">
+    <div class="info-box">
+      <h3 data-en="🔥 45.5m Mesh Belt Tunnel Kiln — What is it?" data-th="🔥 เตาอบอุโมงค์สายพาน 45.5 ม. — คืออะไร?"></h3>
+      <p data-en="This is a very long oven (45.5 meters — about the length of 4 buses!) on a moving stainless steel mesh belt. Cups ride on the belt through different temperature zones to bake and cure the paint. Temperature is controlled to within ±1°C precision." data-th="นี่คือเตาอบที่ยาวมาก (45.5 เมตร — ยาวเท่ารถบัส 4 คัน!) บนสายพานตาข่ายสแตนเลสที่เคลื่อนที่ได้ แก้วจะวิ่งบนสายพานผ่านโซนอุณหภูมิต่างๆ เพื่ออบและบ่มสี ควบคุมอุณหภูมิได้ในความแม่นยำ ±1°C"></p>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px;" data-en="Kiln zones — click to learn more:" data-th="โซนเตาอบ — คลิกเพื่อเรียนรู้เพิ่มเติม:"></div>
+    <div class="kiln-bar">
+      <div class="kiln-zone" style="background:#b0c4de;width:9%;" onclick="showKiln('level')" data-en="Levelling 4m" data-th="โซนอุ่น 4ม."></div>
+      <div class="kiln-zone" style="background:#e05c5c;width:44%;" onclick="showKiln('heat')" data-en="Heating Zone 20m (10 segments)" data-th="โซนให้ความร้อน 20ม. (10 ส่วน)"></div>
+      <div class="kiln-zone" style="background:#c0392b;width:9%;" onclick="showKiln('const')" data-en="Constant Temp 4m" data-th="อุณหภูมิคงที่ 4ม."></div>
+      <div class="kiln-zone" style="background:#3ab5e6;width:35%;" onclick="showKiln('cool')" data-en="Cooling Zone 16m (8 segments)" data-th="โซนระบายความร้อน 16ม."></div>
+      <div class="kiln-zone" style="background:#5cb85c;width:3%;" onclick="showKiln('out')" data-en="Out" data-th="ออก"></div>
+    </div>
+    <div id="kiln-detail" class="detail-panel" style="display:none;">
+      <h4 id="kiln-title"></h4>
+      <p id="kiln-body"></p>
+      <div class="facts" id="kiln-facts"></div>
+    </div>
+    <div class="cols" style="margin-top:14px;">
+      <div class="info-box" style="border-left-color:#e05c5c;">
+        <h3 data-en="⚙️ Key Specs" data-th="⚙️ ข้อมูลจำเพาะหลัก"></h3>
+        <ul>
+          <li data-en="Total length: 45.5 m" data-th="ความยาวรวม: 45.5 ม."></li>
+          <li data-en="Belt width: 0.90 m (SUS304 stainless steel)" data-th="ความกว้างสายพาน: 0.90 ม. (สแตนเลส SUS304)"></li>
+          <li data-en="Max temperature: ≤300°C" data-th="อุณหภูมิสูงสุด: ≤300°C"></li>
+          <li data-en="Belt speed: 1–2.5 m/min (adjustable)" data-th="ความเร็วสายพาน: 1–2.5 ม./นาที (ปรับได้)"></li>
+          <li data-en="Temperature precision: ±1°C" data-th="ความแม่นยำอุณหภูมิ: ±1°C"></li>
+          <li data-en="Total weight: 30 tonnes" data-th="น้ำหนักรวม: 30 ตัน"></li>
+        </ul>
+      </div>
+      <div class="info-box" style="border-left-color:#3ab5e6;">
+        <h3 data-en="💡 Why Such a Long Kiln?" data-th="💡 ทำไมต้องใช้เตาอบที่ยาวมากขนาดนี้?"></h3>
+        <p data-en="The ceramic mug must be heated slowly and cooled slowly. If you heat or cool it too fast, it cracks! The long kiln gives cups enough time at each temperature zone. Think of it like baking a cake — you can't rush the oven." data-th="แก้วเซรามิกต้องถูกให้ความร้อนและระบายความร้อนอย่างช้าๆ หากเร็วเกินไปจะแตก! เตาอบที่ยาวให้เวลาเพียงพอในแต่ละโซนอุณหภูมิ เปรียบเหมือนการอบเค้ก — ห้ามรีบ"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPRAY -->
+  <div class="section" id="spray">
+    <div class="info-box">
+      <h3 data-en="🎨 How Spray Painting Works" data-th="🎨 กระบวนการพ่นสีทำงานอย่างไร"></h3>
+      <p data-en="The spray painting line coats ceramic cups with a uniform, durable paint layer using automated spray guns. Cups are mounted on rotating fixtures that spin while the gun moves back and forth — ensuring every surface is evenly coated." data-th="สายการพ่นสีเคลือบแก้วเซรามิกด้วยชั้นสีที่สม่ำเสมอและทนทาน โดยใช้หัวฉีดพ่นสีอัตโนมัติ แก้วถูกติดบนอุปกรณ์หมุนที่หมุนขณะที่หัวฉีดเคลื่อนไปมา เพื่อให้ทุกพื้นผิวถูกเคลือบอย่างสม่ำเสมอ"></p>
+    </div>
+    <div class="stage-list">
+      <div class="stage-item"><div class="stage-num" style="background:#888;">1</div><div class="stage-text"><h4 data-en="Air Gun Dust Removal" data-th="ปืนลมกำจัดฝุ่น"></h4><p data-en="Before painting, a high-pressure air gun (0.6–0.8 MPa) blasts the cup surface to remove dust or metal shavings. Efficiency: ≥98%. Even a tiny speck of dust under paint creates a visible bump or defect." data-th="ก่อนพ่นสี ปืนลมแรงดันสูง (0.6–0.8 MPa) จะเป่าพื้นผิวแก้วเพื่อกำจัดฝุ่นหรือเศษโลหะ ประสิทธิภาพ: ≥98% แม้แต่เม็ดฝุ่นเล็กๆ ใต้สีก็สร้างตำหนิที่มองเห็นได้"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">2</div><div class="stage-text"><h4 data-en="Manual Loading + Cup Washing" data-th="ป้อนแก้ว + ล้างแก้ว"></h4><p data-en="Operators place cups on the conveyor. The washing machine uses purified water (from the RO system) to clean cups. Cycle: ~20 min. Then UV light sterilises the surface and strong airflow removes remaining moisture." data-th="ผู้ปฏิบัติงานวางแก้วบนสายพาน เครื่องล้างใช้น้ำบริสุทธิ์ (จากระบบ RO) ล้างแก้ว รอบ: ~20 นาที จากนั้น UV ฆ่าเชื้อบนพื้นผิว และลมแรงกำจัดความชื้นที่เหลือ"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#f5a623;">3</div><div class="stage-text"><h4 data-en="Pre-Heat (40–60°C)" data-th="อุ่นล่วงหน้า (40–60°C)"></h4><p data-en="Cups are briefly pre-heated in a hot-air oven (PID controlled, up to 100°C) for 2–5 minutes. A warm cup surface helps paint stick better — like warming a surface before applying primer." data-th="แก้วถูกอุ่นล่วงหน้าในเตาอบลมร้อน (ควบคุม PID, สูงสุด 100°C) เป็นเวลา 2–5 นาที พื้นผิวที่อุ่นช่วยให้สีติดดีขึ้น เหมือนกับการอุ่นพื้นผิวก่อนทาสีรองพื้น"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#e05c5c;">4</div><div class="stage-text"><h4 data-en="Automated Spray Painting" data-th="พ่นสีอัตโนมัติ"></h4><p data-en="A servo reciprocating machine moves the spray gun back and forth (stroke: 1.5m, speed: 0.3–0.6 m/s). Cups rotate on fixtures while being sprayed 2–3 passes. Film thickness: 15–30μm. The spray booth water curtain captures overspray to prevent air pollution." data-th="เครื่องพ่นสีแบบลูกสูบเซอร์โวเคลื่อนหัวฉีดไปมา (ระยะ: 1.5ม., ความเร็ว: 0.3–0.6 ม./วินาที) แก้วหมุนบนอุปกรณ์ขณะพ่น 2–3 รอบ ความหนาฟิล์ม: 15–30μm ม่านน้ำในบู๊ธดักจับละอองสีส่วนเกิน"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#e05c5c;">5</div><div class="stage-text"><h4 data-en="Hot Air Curing (150–180°C)" data-th="อบแห้งด้วยลมร้อน (150–180°C)"></h4><p data-en="Freshly sprayed cups pass through a hot-air tunnel oven for 8–15 minutes at 150–180°C. This chemically bonds the paint to the ceramic surface, making it hard and durable. The main ceramic line uses the 45.5m kiln instead (180°C, 1.5 hours)." data-th="แก้วที่พ่นสีสดผ่านเตาอบอุโมงค์ลมร้อน 8–15 นาทีที่ 150–180°C สิ่งนี้เชื่อมสีเข้ากับพื้นผิวเซรามิกทางเคมี ทำให้แข็งและทนทาน สายเซรามิกหลักใช้เตาอบ 45.5ม. แทน (180°C, 1.5 ชม.)"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#5cb85c;">6</div><div class="stage-text"><h4 data-en="Auto Unloading + Cooling" data-th="ขนถ่ายอัตโนมัติ + ระบายความร้อน"></h4><p data-en="Cups automatically slide off the conveyor onto a collection rack. Cooling fans bring them to room temperature before handling. Hot cups would be damaged if handled immediately." data-th="แก้วจะเลื่อนออกจากสายพานอัตโนมัติไปยังชั้นวาง พัดลมระบายความร้อนลดอุณหภูมิให้ถึงระดับห้องก่อนหยิบจับ แก้วร้อนจะเสียหายหากหยิบจับทันที"></p></div></div>
+    </div>
+  </div>
+
+  <!-- AIR TREATMENT -->
+  <div class="section" id="air">
+    <div class="info-box">
+      <h3 data-en="💨 Why Does the Air Need to be Cleaned?" data-th="💨 ทำไมอากาศต้องได้รับการบำบัด?"></h3>
+      <p data-en="Spray painting releases VOCs (Volatile Organic Compounds) — toxic chemicals like toluene, xylene, and benzene from paint. These smell bad and are harmful to humans and the environment. The factory treats this air before releasing it. Target: >95% purification efficiency. Total capacity: 60,000 m³/h." data-th="การพ่นสีปล่อย VOC (สารประกอบอินทรีย์ระเหย) — สารเคมีพิษอย่างโทลูอีน ไซลีน และเบนซีนจากสี สารเหล่านี้มีกลิ่นเหม็นและเป็นอันตรายต่อมนุษย์และสิ่งแวดล้อม โรงงานบำบัดอากาศก่อนปล่อยออก เป้าหมาย: ประสิทธิภาพ >95% กำลังการผลิต: 60,000 ม.³/ชม."></p>
+    </div>
+    <div class="stage-list">
+      <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">1</div><div class="stage-text"><h4 data-en="Cyclone Tower (Wet Pre-Treatment) 🌀" data-th="หอไซโคลน (การบำบัดเบื้องต้นแบบเปียก) 🌀"></h4><p data-en="Removes: Large dust particles, paint mist, soluble chemicals. How: Dirty air spins inside the tower like a tornado. Dust is flung to the walls, captured by water droplets, and settles to the bottom tank. Imagine a wet spinning drum where particles stick to water and fall down." data-th="กำจัด: อนุภาคฝุ่นขนาดใหญ่, ละอองสี, สารเคมีที่ละลายน้ำได้ วิธีการ: อากาศสกปรกหมุนภายในหอเหมือนพายุทอร์นาโด ฝุ่นถูกเหวี่ยงไปยังผนัง ถูกดักจับโดยหยดน้ำ และตกลงสู่ถังน้ำด้านล่าง"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#888;">2</div><div class="stage-text"><h4 data-en="Dry Filter (Secondary Filtration) 🧽" data-th="ตัวกรองแห้ง (การกรองรอบสอง) 🧽"></h4><p data-en="Removes: Fine dust, water mist, tiny residual particles. How: Air passes through multiple layers of fine filter material (glass fibre + polyester felt). Filtration precision: 1–5 micrometers. A pressure gauge monitors when the filter needs replacing." data-th="กำจัด: ฝุ่นละเอียด, ละอองน้ำ, อนุภาคเล็กที่เหลือ วิธีการ: อากาศผ่านชั้นวัสดุกรองละเอียดหลายชั้น (ใยแก้ว + ผ้าโพลีเอสเตอร์) ความแม่นยำในการกรอง: 1–5 ไมโครเมตร มาตรวัดความดันตรวจสอบเมื่อต้องเปลี่ยนไส้กรอง"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#f5a623;">3</div><div class="stage-text"><h4 data-en="Activated Carbon Adsorption/Desorption 🪨" data-th="การดูดซับ/คายซับถ่านกัมมันต์ 🪨"></h4><p data-en="Removes: VOC gas molecules (toluene, xylene, etc.). Air passes through honeycomb activated carbon beds. VOC molecules stick to the carbon (adsorption). When full, hot air (80–120°C) blows backwards to release concentrated VOCs (desorption). Concentrated gas goes to Stage 4." data-th="กำจัด: โมเลกุลก๊าซ VOC (โทลูอีน, ไซลีน ฯลฯ) อากาศผ่านชั้นถ่านกัมมันต์รังผึ้ง โมเลกุล VOC ติดกับถ่าน (การดูดซับ) เมื่อเต็ม ลมร้อน (80–120°C) จะเป่าย้อนกลับเพื่อปล่อย VOC เข้มข้น (การคายซับ) ก๊าซเข้มข้นส่งไปขั้นที่ 4"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#e05c5c;">4</div><div class="stage-text"><h4 data-en="Catalytic Combustion Furnace 🔥" data-th="เตาเผาเร่งปฏิกิริยา 🔥"></h4><p data-en="Destroys: Concentrated VOCs from Stage 3. VOCs combust at 250–400°C using a catalyst (special metal coating) — called flameless combustion. Result: VOCs are converted to harmless CO₂ and water vapour. The heat generated is recycled back to Stage 3 to save energy!" data-th="ทำลาย: VOC เข้มข้นจากขั้นที่ 3 VOC เผาไหม้ที่ 250–400°C โดยใช้ตัวเร่งปฏิกิริยา (การเคลือบโลหะพิเศษ) เรียกว่าการเผาไหม้ไร้เปลวไฟ ผล: VOC ถูกแปลงเป็น CO₂ และไอน้ำที่ไม่เป็นอันตราย ความร้อนถูกนำกลับมาใช้ใหม่ในขั้นที่ 3 เพื่อประหยัดพลังงาน!"></p></div></div>
+    </div>
+    <div class="info-box" style="border-left-color:#5cb85c;margin-top:14px;">
+      <h3 data-en="📊 Performance Numbers" data-th="📊 ตัวเลขประสิทธิภาพ"></h3>
+      <ul>
+        <li data-en="Total air treated: 60,000 m³/h" data-th="อากาศที่บำบัดรวม: 60,000 ม.³/ชม."></li>
+        <li data-en="VOC inlet concentration: ≤300 mg/m³" data-th="ความเข้มข้น VOC ขาเข้า: ≤300 มก./ม.³"></li>
+        <li data-en="Purification efficiency: >95%" data-th="ประสิทธิภาพการบำบัด: >95%"></li>
+        <li data-en="Catalytic combustion temperature: 250–400°C" data-th="อุณหภูมิการเผาไหม้เร่งปฏิกิริยา: 250–400°C"></li>
+        <li data-en="Complies with: Thai & Chinese air quality standards" data-th="เป็นไปตามมาตรฐานคุณภาพอากาศไทยและจีน"></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- WATER TREATMENT -->
+  <div class="section" id="water">
+    <div class="info-box">
+      <h3 data-en="💧 Two Water Systems in the Factory" data-th="💧 สองระบบน้ำในโรงงาน"></h3>
+      <p data-en="The factory has two separate water systems: (A) Pure Water Production — making clean water for washing cups, and (B) Wastewater Treatment — cleaning dirty water from the spray booth and cup washing." data-th="โรงงานมีสองระบบน้ำแยกจากกัน: (A) การผลิตน้ำบริสุทธิ์ — ทำน้ำสะอาดสำหรับล้างแก้ว และ (B) การบำบัดน้ำเสีย — ทำความสะอาดน้ำสกปรกจากบู๊ธพ่นสีและการล้างแก้ว"></p>
+    </div>
+    <div style="font-size:14px;font-weight:700;margin:14px 0 8px;color:#1a55a0;" data-en="A. Pure Water System — Dual-Stage RO-2000 (2 tonnes/hour)" data-th="A. ระบบน้ำบริสุทธิ์ — RO-2000 สองขั้นตอน (2 ตัน/ชม.)"></div>
+    <div class="info-box" style="border-left-color:#3ab5e6;margin-bottom:8px;">
+      <p data-en="Tap water has minerals that can stain ceramic cups or affect paint adhesion. The factory purifies water using Reverse Osmosis (RO) membranes — like pushing water through an extremely fine filter that only water molecules can pass through." data-th="น้ำประปามีแร่ธาตุที่อาจทำให้แก้วเซรามิกมีคราบหรือส่งผลต่อการยึดเกาะของสี โรงงานทำน้ำบริสุทธิ์ด้วยเมมเบรน Reverse Osmosis (RO) — เหมือนการผลักน้ำผ่านตัวกรองที่ละเอียดมากที่โมเลกุลน้ำเท่านั้นที่ผ่านได้"></p>
+    </div>
+    <div class="stage-list">
+      <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">1</div><div class="stage-text"><h4 data-en="Pre-Treatment (3 steps)" data-th="การบำบัดเบื้องต้น (3 ขั้นตอน)"></h4><p data-en="Multi-Media Filter: Quartz sand layers remove large particles. Activated Carbon Filter: Removes chlorine, odours, organic matter (protects RO membranes). Cartridge Filter: Final 5-micron filter before RO." data-th="ตัวกรองหลายชั้น: ทรายควอร์ตซ์กำจัดอนุภาคขนาดใหญ่ ตัวกรองถ่านกัมมันต์: กำจัดคลอรีน กลิ่น สารอินทรีย์ ตัวกรองตลับ: กรอง 5 ไมครอนก่อน RO"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#1a55a0;">2</div><div class="stage-text"><h4 data-en="Stage 1 RO Membrane" data-th="เมมเบรน RO ขั้นที่ 1"></h4><p data-en="Water is pushed through RO membranes at high pressure (pump: 178m head, 4 kW). Membranes block dissolved salts, minerals, and bacteria. A conductivity meter measures water purity." data-th="น้ำถูกผลักผ่านเมมเบรน RO ที่แรงดันสูง (ปั๊ม: หัว 178ม., 4 กิโลวัตต์) เมมเบรนกั้นเกลือที่ละลาย แร่ธาตุ และแบคทีเรีย มิเตอร์ค่านำไฟฟ้าวัดความบริสุทธิ์"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#1a55a0;">3</div><div class="stage-text"><h4 data-en="Stage 2 RO Membrane" data-th="เมมเบรน RO ขั้นที่ 2"></h4><p data-en="Already-purified water passes through a second set of RO membranes for even higher purity. Fully automatic PLC control ensures consistent output quality." data-th="น้ำที่ได้รับการบำบัดแล้วผ่านชุดเมมเบรน RO ชุดที่สองเพื่อความบริสุทธิ์ที่สูงขึ้น ควบคุมด้วย PLC อัตโนมัติเต็มรูปแบบเพื่อคุณภาพผลผลิตที่สม่ำเสมอ"></p></div></div>
+    </div>
+    <div style="font-size:14px;font-weight:700;margin:18px 0 8px;color:#c0392b;" data-en="B. Wastewater Treatment — Spray Booth Water" data-th="B. การบำบัดน้ำเสีย — น้ำจากบู๊ธพ่นสี"></div>
+    <div class="stage-list">
+      <div class="stage-item"><div class="stage-num" style="background:#e05c5c;">1</div><div class="stage-text"><h4 data-en="Collection — Water Curtain Cabinets (×4)" data-th="การรวบรวม — ตู้ม่านน้ำ (×4)"></h4><p data-en="Paint mist from the spray booth hits a curtain of flowing water. Paint particles are captured in the water and flow into recirculation pools — initially reused to capture more paint mist." data-th="ละอองสีจากบู๊ธพ่นสีกระทบกับม่านน้ำที่ไหล อนุภาคสีถูกดักจับในน้ำและไหลเข้าสู่บ่อหมุนเวียน — ในขั้นต้นนำมาใช้ใหม่เพื่อดักจับละอองสีเพิ่มเติม"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#f5a623;">2</div><div class="stage-text"><h4 data-en="Chemical Dosing (Reagents A & B + Alkali)" data-th="การเติมสารเคมี (สาร A & B + ด่าง)"></h4><p data-en="Reagent A (Coagulant): Makes tiny paint particles clump together — like curdling milk. Reagent B (Flocculant): Causes the clumps to form fluffy flocs that float or sink easily. Alkali solution: Adjusts water pH to the right level for treatment." data-th="สาร A (โคแอกกูแลนต์): ทำให้อนุภาคสีเล็กๆ จับตัวเป็นก้อน เหมือนการจับตัวของนม สาร B (ฟล็อกคูแลนต์): ทำให้ก้อนก่อตัวเป็นฟล็อกฟูที่ลอยหรือจมได้ง่าย สารละลายด่าง: ปรับ pH ของน้ำ"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">3</div><div class="stage-text"><h4 data-en="Air Flotation Machine" data-th="เครื่องลอยอากาศ"></h4><p data-en="Millions of tiny air bubbles are pumped into the water. Bubbles attach to paint flocs and carry them to the surface — like a bubble bath for paint removal. Floating scum (paint sludge) is skimmed off. Clarified water is recycled back into the spray booth." data-th="ฟองอากาศเล็กๆ หลายล้านฟองถูกสูบเข้าในน้ำ ฟองเกาะติดฟล็อกสีและพาขึ้นสู่ผิว เหมือนอ่างฟองสบู่สำหรับกำจัดสี ฝ้าลอย (กากสี) ถูกตักออก น้ำใสถูกหมุนเวียนกลับสู่บู๊ธพ่นสี"></p></div></div>
+      <div class="stage-item"><div class="stage-num" style="background:#888;">4</div><div class="stage-text"><h4 data-en="Sludge Pool + Filter Press" data-th="บ่อกากตะกอน + เครื่องอัดกรอง"></h4><p data-en="Paint sludge is pumped into a sludge pool, then dewatered in a filter press. The dry paint 'cake' is classified as hazardous waste and handed to a licensed specialist contractor for safe disposal." data-th="กากสีถูกสูบเข้าบ่อกาก จากนั้นระบายน้ำออกในเครื่องอัดกรอง 'เค้ก' สีแห้งที่เหลือถูกจัดเป็นของเสียอันตรายและส่งมอบให้ผู้รับจัดการเฉพาะทางที่ได้รับใบอนุญาต"></p></div></div>
+    </div>
+    <div class="highlight" style="margin-top:14px;">
+      <p><span data-en="♻️ Water Recycling: After air flotation, treated water is returned to the spray booth recirculation pool — minimising water consumption and discharge. The factory only discharges waste when absolutely necessary." data-th="♻️ การรีไซเคิลน้ำ: หลังจากการลอยอากาศ น้ำที่บำบัดแล้วจะถูกส่งคืนสู่บ่อหมุนเวียนบู๊ธพ่นสี — ลดการใช้น้ำและการปล่อยน้ำเสีย โรงงานจะปล่อยของเสียออกเมื่อจำเป็นเท่านั้น"></span></p>
+    </div>
+  </div>
+
+  <!-- FLOORS -->
+  <div class="section" id="floors">
+    <div class="info-box">
+      <h3 data-en="🏗️ Factory Building Layout" data-th="🏗️ ผังอาคารโรงงาน"></h3>
+      <p data-en="The BestSub Thailand factory has 2 production floors plus office areas." data-th="โรงงาน BestSub ประเทศไทยมี 2 ชั้นการผลิตและพื้นที่สำนักงาน"></p>
+    </div>
+    <div class="cols">
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#1a55a0;" data-en="Floor 1 — Main Production" data-th="ชั้น 1 — การผลิตหลัก"></div>
+        <div class="stage-list">
+          <div class="stage-item"><div class="stage-num" style="background:#f5a623;">A</div><div class="stage-text"><h4 data-en="Spray Painting Lines" data-th="สายพ่นสี"></h4><p data-en="12m floor-chain spray line with 4 guns + water curtain cabinet" data-th="สายพ่นสีโซ่พื้น 12ม. พร้อมปืน 4 กระบอก + ตู้ม่านน้ำ"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#e05c5c;">B</div><div class="stage-text"><h4 data-en="45.5m Tunnel Kiln" data-th="เตาอบอุโมงค์ 45.5ม."></h4><p data-en="Main paint curing oven — occupies much of the factory floor" data-th="เตาอบบ่มสีหลัก — ครองพื้นที่ส่วนใหญ่ของชั้นโรงงาน"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">C</div><div class="stage-text"><h4 data-en="Cup Washing Machine" data-th="เครื่องล้างแก้ว"></h4><p data-en="Automated washing + UV sterilisation station" data-th="สถานีล้างอัตโนมัติ + ฆ่าเชื้อ UV"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#5cb85c;">D</div><div class="stage-text"><h4 data-en="Packaging Zone" data-th="โซนบรรจุหีบห่อ"></h4><p data-en="Box erector, gluing machine, label printer, palletising" data-th="เครื่องตั้งกล่อง, เครื่องติดกาว, เครื่องพิมพ์ฉลาก, วางพาเลท"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#888;">E</div><div class="stage-text"><h4 data-en="Environmental Systems" data-th="ระบบสิ่งแวดล้อม"></h4><p data-en="VOC air treatment + wastewater treatment plant + RO pure water system" data-th="บำบัดอากาศ VOC + โรงบำบัดน้ำเสีย + ระบบน้ำบริสุทธิ์ RO"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#9b59b6;">F</div><div class="stage-text"><h4 data-en="Offices" data-th="สำนักงาน"></h4><p data-en="GM office, meeting room (30m²), 11-desk open office, finance, reception + product showcase" data-th="ห้องผู้จัดการ, ห้องประชุม (30ม.²), สำนักงานเปิด 11 โต๊ะ, การเงิน, แผนกต้อนรับ + โชว์สินค้า"></p></div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#1a55a0;" data-en="Floor 2 — Sublimation Printing" data-th="ชั้น 2 — การพิมพ์ซับลิเมชัน"></div>
+        <div class="stage-list">
+          <div class="stage-item"><div class="stage-num" style="background:#3ab5e6;">1</div><div class="stage-text"><h4 data-en="Flat-Plate Lines (×3)" data-th="สายแผ่นราบ (×3)"></h4><p data-en="Workbench: 2,400×1,200×750mm | 16.8m long | 7 shelves each. For sublimation heat transfer on flat products." data-th="โต๊ะทำงาน: 2,400×1,200×750มม. | ยาว 16.8ม. | 7 ชั้นต่อแถว สำหรับการถ่ายโอนความร้อนซับลิเมชันบนผลิตภัณฑ์แบน"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#f5a623;">2</div><div class="stage-text"><h4 data-en="Cup-Baking Lines (×2)" data-th="สายอบแก้ว (×2)"></h4><p data-en="Same size workbenches. For sublimation printing on cylindrical cups — how images are permanently transferred onto coated cups." data-th="โต๊ะขนาดเดียวกัน สำหรับการพิมพ์ซับลิเมชันบนแก้วทรงกระบอก — วิธีที่ภาพถ่ายโอนถาวรลงบนแก้วที่เคลือบแล้ว"></p></div></div>
+          <div class="stage-item"><div class="stage-num" style="background:#9b59b6;">3</div><div class="stage-text"><h4 data-en="Industrial Robot Line (×1)" data-th="สายหุ่นยนต์อุตสาหกรรม (×1)"></h4><p data-en="10 workbenches | Automated robotic processes | 40 kW transformer" data-th="10 โต๊ะทำงาน | กระบวนการหุ่นยนต์อัตโนมัติ | หม้อแปลง 40 กิโลวัตต์"></p></div></div>
+        </div>
+        <div class="highlight" style="margin-top:10px;">
+          <p><strong data-en="What is Sublimation Printing?" data-th="การพิมพ์ซับลิเมชันคืออะไร?"></strong> <span data-en="A special ink is printed on paper, then pressed onto the painted ceramic cup with heat (~200°C). The ink turns into gas and bonds with the paint coating — creating a permanent, photo-quality image on the cup. This is how custom logos and photos end up on mugs!" data-th="หมึกพิเศษถูกพิมพ์ลงบนกระดาษ จากนั้นกดลงบนแก้วเซรามิกที่พ่นสีแล้วด้วยความร้อน (~200°C) หมึกจะกลายเป็นก๊าซและเชื่อมกับชั้นสี — สร้างภาพคุณภาพรูปถ่ายถาวรบนแก้ว นี่คือวิธีที่โลโก้และรูปภาพที่กำหนดเองปรากฏบนแก้ว!"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentLang = 'en';
+
+const prodDetails = {
+  raw: {
+    en: { title: '🫙 Raw Cup Arrives', body: 'Blank, undecorated ceramic mugs arrive at the factory sorted by type and size. They have no colour, no logo, and no coating — just raw fired ceramic. They are checked for cracks or defects before entering the production line.', facts: ['Sorted by type','Checked for defects','Transported to cleaning zone'] },
+    th: { title: '🫙 แก้วดิบมาถึง', body: 'แก้วมัคเซรามิกเปล่าไม่ตกแต่งมาถึงโรงงานโดยแยกตามประเภทและขนาด ไม่มีสี ไม่มีโลโก้ และไม่มีการเคลือบ — เพียงแค่เซรามิกที่เผาดิบ ตรวจสอบรอยแตกหรือข้อบกพร่องก่อนเข้าสู่สายการผลิต', facts: ['แยกตามประเภท','ตรวจสอบข้อบกพร่อง','ขนส่งไปโซนทำความสะอาด'] }
+  },
+  wash: {
+    en: { title: '🚿 Step 1 — Cup Washing Machine', body: 'Cups are placed in an automatic washing machine that uses purified softened water (from the RO system) to thoroughly clean the surface. This removes fingerprints, dust, oils, and manufacturing residue. Clean surface = paint sticks properly. Wash cycle: ~20 minutes.', facts: ['Cycle: ~20 min','Purified RO water','Automatic conveyor','Removes oils & dust'] },
+    th: { title: '🚿 ขั้นที่ 1 — เครื่องล้างแก้ว', body: 'แก้วถูกวางในเครื่องล้างอัตโนมัติที่ใช้น้ำอ่อนบริสุทธิ์ (จากระบบ RO) ทำความสะอาดพื้นผิวอย่างทั่วถึง กำจัดรอยนิ้วมือ ฝุ่น น้ำมัน และสิ่งตกค้างจากการผลิต พื้นผิวสะอาด = สีติดได้ดี รอบการล้าง: ~20 นาที', facts: ['รอบ: ~20 นาที','น้ำ RO บริสุทธิ์','สายพานอัตโนมัติ','กำจัดน้ำมันและฝุ่น'] }
+  },
+  dry: {
+    en: { title: '💨 Step 2 — Drying, UV & Air Dry', body: 'After washing, cups automatically move through: (1) Drying zone at ~100°C to evaporate water. (2) UV sterilisation zone — UV light kills bacteria. (3) Air drying zone with powerful airflow to remove any remaining moisture. No moisture = no paint bubbles.', facts: ['Drying temp: ~100°C','UV sterilisation','Strong airflow dry','Prevents paint bubbles'] },
+    th: { title: '💨 ขั้นที่ 2 — อบแห้ง, UV & เป่าแห้ง', body: 'หลังจากล้าง แก้วจะเคลื่อนผ่านอัตโนมัติ: (1) โซนอบแห้งที่ ~100°C ระเหยน้ำ (2) โซน UV ฆ่าเชื้อ (3) โซนเป่าแห้งด้วยลมแรงกำจัดความชื้นที่เหลือ ไม่มีความชื้น = ไม่มีฟองสี', facts: ['อุณหภูมิอบ: ~100°C','UV ฆ่าเชื้อ','เป่าด้วยลมแรง','ป้องกันฟองสี'] }
+  },
+  spray: {
+    en: { title: '🎨 Step 3 — Automated Spray Painting', body: 'Paint mixed to the exact ratio is loaded into the spray system. Cups are mounted on rotating fixtures on a chain conveyor. Automated spray guns apply 2–3 passes, creating a uniform 15–30μm thick coating. The spray booth has a water curtain to catch all overspray — preventing air pollution.', facts: ['Film: 15–30μm','2–3 spray passes','Auto rotation','Water curtain captures overspray'] },
+    th: { title: '🎨 ขั้นที่ 3 — พ่นสีอัตโนมัติ', body: 'สีที่ผสมตามอัตราส่วนถูกป้อนเข้าระบบ แก้วถูกติดบนอุปกรณ์หมุนบนสายพานโซ่ หัวฉีดอัตโนมัติพ่น 2–3 รอบ สร้างชั้นสีหนา 15–30μm สม่ำเสมอ บู๊ธพ่นสีมีม่านน้ำดักจับละอองสีส่วนเกิน', facts: ['ฟิล์ม: 15–30μm','พ่น 2–3 รอบ','หมุนอัตโนมัติ','ม่านน้ำดักละอองสี'] }
+  },
+  kiln: {
+    en: { title: '🔥 Step 4 — Mesh Belt Tunnel Kiln (45.5m)', body: 'Sprayed cups ride on a stainless steel mesh belt through the 45.5m tunnel kiln. Temperature is raised slowly, held at up to 300°C, then cooled slowly. This baking process chemically bonds the paint to the ceramic — creating a hard, scratch-resistant coating. Total time: ~1.5 hours.', facts: ['Length: 45.5m','Max temp: ≤300°C','Speed: 1–2.5 m/min','±1°C precision','Time: ~1.5 hours'] },
+    th: { title: '🔥 ขั้นที่ 4 — เตาอบอุโมงค์สายพาน (45.5ม.)', body: 'แก้วที่พ่นสีแล้ววิ่งบนสายพานตาข่ายสแตนเลสผ่านเตาอบอุโมงค์ 45.5ม. อุณหภูมิเพิ่มขึ้นช้าๆ ถืออยู่ที่สูงสุด 300°C จากนั้นระบายความร้อนช้าๆ กระบวนการอบเชื่อมสีกับเซรามิกทางเคมี เวลารวม: ~1.5 ชม.', facts: ['ความยาว: 45.5ม.','อุณหภูมิสูงสุด: ≤300°C','ความเร็ว: 1–2.5 ม./นาที','ความแม่นยำ ±1°C','เวลา: ~1.5 ชม.'] }
+  },
+  cool: {
+    en: { title: '❄️ Step 5 — Air Cooling', body: 'After exiting the kiln at high temperature, cups must cool down before they can be handled. Cooling fans blow cool air over the cups. Rushing this step could cause thermal shock and crack the cups. Cups cool to room temperature before human handling.', facts: ['Fan-assisted cooling','Prevents thermal shock','Room temp before touch'] },
+    th: { title: '❄️ ขั้นที่ 5 — ระบายความร้อนด้วยอากาศ', body: 'หลังออกจากเตาอบที่อุณหภูมิสูง แก้วต้องระบายความร้อนก่อนหยิบจับ พัดลมเป่าลมเย็นผ่านแก้ว การเร่งรีบอาจทำให้เกิดความช็อคจากความร้อนและแก้วแตก แก้วระบายความร้อนจนถึงอุณหภูมิห้องก่อนการสัมผัส', facts: ['ระบายด้วยพัดลม','ป้องกัน thermal shock','อุณหภูมิห้องก่อนสัมผัส'] }
+  },
+  qc: {
+    en: { title: '🔍 Step 6 — Manual QC Inspection', body: 'Human quality control inspectors examine every cup for: coating uniformity (is the colour even?), adhesion (does the paint stick firmly?), and surface defects (bubbles, scratches, missed spots). Failed cups are rejected. Only perfect cups proceed to packaging.', facts: ['Visual inspection','Check: uniformity','Check: adhesion','Check: defects'] },
+    th: { title: '🔍 ขั้นที่ 6 — ตรวจสอบคุณภาพด้วยมือ', body: 'ผู้ตรวจสอบคุณภาพตรวจแก้วทุกใบสำหรับ: ความสม่ำเสมอของชั้นสี, การยึดเกาะ, และข้อบกพร่องพื้นผิว (ฟอง, รอยขีด, จุดที่ขาดหาย) แก้วที่ล้มเหลวถูกปฏิเสธ มีเพียงแก้วสมบูรณ์ที่ดำเนินต่อสู่การบรรจุหีบห่อ', facts: ['ตรวจสอบด้วยสายตา','ตรวจ: ความสม่ำเสมอ','ตรวจ: การยึดเกาะ','ตรวจ: ข้อบกพร่อง'] }
+  },
+  label: {
+    en: { title: '🖨️ Step 7 — Bottom Label Printing (Route B only)', body: 'For products that need a bottom label (brand logo, product info, QR codes, etc.), cups go through a separate label printing machine. After printing, they pass through a second drying step — sometimes using a separate 15m mesh belt kiln — to cure the label ink permanently.', facts: ['Route B only','Separate 15m kiln','Brand/info labels','Second drying step'] },
+    th: { title: '🖨️ ขั้นที่ 7 — พิมพ์สติกเกอร์ก้น (เฉพาะเส้นทาง B)', body: 'สำหรับผลิตภัณฑ์ที่ต้องการสติกเกอร์ก้น แก้วจะผ่านเครื่องพิมพ์สติกเกอร์แยกต่างหาก หลังจากพิมพ์ ผ่านขั้นตอนอบแห้งครั้งที่สอง — บางครั้งใช้เตาอบสายพาน 15ม. แยกต่างหาก', facts: ['เฉพาะเส้นทาง B','เตาอบ 15ม. แยก','สติกเกอร์แบรนด์/ข้อมูล','ขั้นอบแห้งครั้งที่สอง'] }
+  },
+  pack: {
+    en: { title: '📦 Step 8 — Packaging', body: 'Operators manually place each cup in a bag, then into individual product boxes. Boxes are assembled by an automatic box erector. A monochrome printing machine prints shipping info. Boxes are sealed by a gluing machine and moved to pallets for storage and shipment.', facts: ['Manual bag sealing','Auto box erector','Label/info printing','Gluing machine seals','Manual palletising'] },
+    th: { title: '📦 ขั้นที่ 8 — บรรจุหีบห่อ', body: 'ผู้ปฏิบัติงานวางแก้วแต่ละใบในถุงด้วยมือ จากนั้นใส่ในกล่องผลิตภัณฑ์ กล่องถูกประกอบด้วยเครื่องตั้งกล่องอัตโนมัติ เครื่องพิมพ์สีเดียวพิมพ์ข้อมูลจัดส่ง กล่องถูกปิดผนึกด้วยเครื่องติดกาวและย้ายไปยังพาเลท', facts: ['ซีลถุงด้วยมือ','เครื่องตั้งกล่องอัตโนมัติ','พิมพ์ฉลาก/ข้อมูล','เครื่องติดกาวปิดผนึก','วางพาเลทด้วยมือ'] }
+  }
+};
+
+const kilnData = {
+  level: {
+    en: { title: 'Levelling Zone (4m) — Zones #1–#2', body: "The cup enters the kiln at room temperature. This zone VERY gradually raises the temperature to 60–80% of the target. This prevents 'thermal shock' — if you heat ceramic too fast, it cracks just like a cold glass cracking when you pour boiling water into it.", facts: ['4 meters long','Gradual warm-up','Prevents cracking','60–80% of target temp'] },
+    th: { title: 'โซนอุ่น (4ม.) — โซน #1–#2', body: "แก้วเข้าเตาอบที่อุณหภูมิห้อง โซนนี้ค่อยๆ เพิ่มอุณหภูมิไปสู่ 60–80% ของเป้าหมาย สิ่งนี้ป้องกัน 'ความช็อคจากความร้อน' — ถ้าให้ความร้อนเซรามิกเร็วเกินไปมันจะแตก เหมือนแก้วเย็นที่แตกเมื่อเทน้ำเดือดลงไป", facts: ['ยาว 4 เมตร','อุ่นขึ้นทีละน้อย','ป้องกันการแตก','60–80% ของอุณหภูมิเป้าหมาย'] }
+  },
+  heat: {
+    en: { title: 'Heating Zone (20m) — Zones #3–#12', body: '10 separate heating segments each with electric heating tubes. Each segment is independently controlled with temperature fluctuation ≤±1°C. This is where the paint actually starts to cure and bond with the ceramic surface.', facts: ['20 meters long','10 segments','±1°C precision','Electric heating tubes'] },
+    th: { title: 'โซนให้ความร้อน (20ม.) — โซน #3–#12', body: '10 ส่วนให้ความร้อนแยกกันแต่ละส่วนมีหลอดให้ความร้อนไฟฟ้า แต่ละส่วนควบคุมอิสระโดยความผันผวน ≤±1°C นี่คือที่ที่สีเริ่มบ่มและเชื่อมกับพื้นผิวเซรามิก', facts: ['ยาว 20 เมตร','10 ส่วน','ความแม่นยำ ±1°C','หลอดให้ความร้อนไฟฟ้า'] }
+  },
+  const: {
+    en: { title: 'Constant-Temperature Zone (4m) — Zones #13–#14', body: 'The cup is held at the maximum target temperature (≤300°C) to ensure the paint coating is completely and uniformly cured. This is the hottest point in the entire process. Then temperature slowly begins to reduce.', facts: ['4 meters long','Max: ≤300°C','Full paint cure','Hottest point'] },
+    th: { title: 'โซนอุณหภูมิคงที่ (4ม.) — โซน #13–#14', body: 'แก้วถูกถืออยู่ที่อุณหภูมิเป้าหมายสูงสุด (≤300°C) เพื่อให้แน่ใจว่าชั้นสีได้รับการบ่มอย่างสมบูรณ์ นี่คือจุดที่ร้อนที่สุดในกระบวนการทั้งหมด จากนั้นอุณหภูมิจะเริ่มลดลงช้าๆ', facts: ['ยาว 4 เมตร','สูงสุด: ≤300°C','บ่มสีสมบูรณ์','จุดร้อนที่สุด'] }
+  },
+  cool: {
+    en: { title: 'Cooling Zone (16m) — Zones #15–#22', body: 'Eight separate cooling segments gradually bring the cup from 300°C down to near room temperature. Just like heating, cooling must be done SLOWLY to prevent cracking. This is the longest zone because slow cooling takes the most time.', facts: ['16 meters long','8 segments','Slow controlled cooling','Air or water cooling','Longest zone'] },
+    th: { title: 'โซนระบายความร้อน (16ม.) — โซน #15–#22', body: 'แปดส่วนระบายความร้อนแยกกันค่อยๆ ลดอุณหภูมิแก้วจาก 300°C ลงสู่ใกล้อุณหภูมิห้อง เหมือนการให้ความร้อน การระบายความร้อนต้องทำช้าๆ เพื่อป้องกันการแตก นี่คือโซนที่ยาวที่สุด', facts: ['ยาว 16 เมตร','8 ส่วน','ระบายความร้อนช้าๆ','อากาศหรือน้ำระบายความร้อน','โซนที่ยาวที่สุด'] }
+  },
+  out: {
+    en: { title: 'Kiln Exit — Finished Product', body: 'Cups exit the kiln with paint fully cured. The coating is now hard, durable, and chemically bonded to the ceramic. Cups continue to a fan cooling zone before QC inspection.', facts: ['Fully cured coating','Hard & durable','Ready for QC'] },
+    th: { title: 'ทางออกเตาอบ — ผลิตภัณฑ์สำเร็จรูป', body: 'แก้วออกจากเตาอบพร้อมสีที่บ่มเต็มที่ ชั้นเคลือบแข็ง ทนทาน และเชื่อมกับเซรามิกทางเคมี แก้วดำเนินต่อสู่โซนระบายความร้อนด้วยพัดลมก่อนการตรวจสอบ QC', facts: ['ชั้นสีบ่มเต็มที่','แข็งและทนทาน','พร้อมตรวจ QC'] }
+  }
+};
+
+function setLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = el.getAttribute('data-' + lang) || el.getAttribute('data-en');
+  });
+  document.getElementById('detail-area').style.display = 'none';
+  document.getElementById('kiln-detail').style.display = 'none';
+}
+
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+function showDetail(key) {
+  const d = prodDetails[key];
+  if (!d) return;
+  const lang = currentLang;
+  document.querySelectorAll('.flow-box').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('detail-title').textContent = d[lang].title;
+  document.getElementById('detail-body').textContent = d[lang].body;
+  document.getElementById('detail-facts').innerHTML = d[lang].facts.map(f => `<span class="fact-chip">${f}</span>`).join('');
+  document.getElementById('detail-area').style.display = 'block';
+}
+
+function showKiln(key) {
+  const d = kilnData[key];
+  if (!d) return;
+  const lang = currentLang;
+  document.getElementById('kiln-title').textContent = d[lang].title;
+  document.getElementById('kiln-body').textContent = d[lang].body;
+  document.getElementById('kiln-facts').innerHTML = d[lang].facts.map(f => `<span class="fact-chip">${f}</span>`).join('');
+  document.getElementById('kiln-detail').style.display = 'block';
+}
+
+// Init
+document.querySelectorAll('[data-en]').forEach(el => {
+  el.textContent = el.getAttribute('data-en');
+});
+</script>
+</body>
+</html>
